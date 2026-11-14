@@ -54,16 +54,17 @@ let points=JSON.parse(localStorage.getItem("fp_track")||"[]");
 let watchId=null;
 
 const map=L.map("map").setView([49.75,18.63],14);
-const tileUrl="https://"+"{s}.tile.openstreetmap.org"+"/1.0/{z}/{x}/{y}.png".replace("/1.0","");
+const tileUrl="https://"+"tile.openstreetmap.org"+"/{z}/{x}/{y}.png";
 L.tileLayer(tileUrl,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
 
 const line=L.polyline([],{color:"#ff4444",weight:5}).addTo(map);
-const startPin=L.circleMarker([0,0],{radius:7,color:"#111",fillColor:"#70e69a",fillOpacity:1});
-const mePin=L.circleMarker([0,0],{radius:8,color:"#fff",fillColor:"#3b82f6",fillOpacity:1});
+const startPin=L.circleMarker([49.75,18.63],{radius:7,color:"#111",fillColor:"#70e69a",fillOpacity:1});
+const mePin=L.circleMarker([49.75,18.63],{radius:8,color:"#fff",fillColor:"#3b82f6",fillOpacity:1});
 
 function calcDist(p1,p2){
  const R=6371000,p=Math.PI/180;
- const a=0.5-Math.cos((p2[0]-p1[0])*p)/2+Math.cos(p1[0]*p)*Math.cos(p2[0]*p)*(1-Math.cos((p2[1]-p1[1])*p))/2;
+ const lat1=p1[0],lon1=p1[1],lat2=p2[0],lon2=p2[1];
+ const a=0.5-Math.cos((lat2-lat1)*p)/2+Math.cos(lat1*p)*Math.cos(lat2*p)*(1-Math.cos((lon2-lon1)*p))/2;
  return 2*R*Math.asin(Math.sqrt(a));
 }
 
@@ -83,31 +84,6 @@ function updateMap(centerMe){
  if(centerMe) map.setView(last,16);
 }
 
-function startTrack(){
- if(!navigator.geolocation){$("status").textContent="Brak GPS.";return;}
- if(watchId!==null)return;
- $("status").textContent="🔴 Nagrywanie śladu na mapie...";
- watchId=navigator.geolocation.watchPosition(pos=>{
-  const pt=[pos.coords.latitude,pos.coords.longitude];
-  if(points.length){
-   const last=points[points.length-1];
-   if(calcDist(last,pt)<5)return;
-  }
-  points.push(pt);
-  localStorage.setItem("fp_track",JSON.stringify(points));
-  updateMap(true);
-  $("status").textContent="🔴 Zapisano punktów: "+points.length+" ("+new Date().toLocaleTimeString("pl-PL")+")";
- },err=>{$("status").textContent="❌ Błąd GPS: "+err.message;},{enableHighAccuracy:true,maximumAge:5000});
-}
-
-function stopTrack(){
- if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;$("status").textContent="⏸️ Zapis wstrzymany. Ślad zostaje na mapie.";}
-}
-
-function clearTrack(){
- if(confirm("Usunąć zapisaną trasę z mapy?")){stopTrack();points=[];localStorage.removeItem("fp_track");updateMap(false);$("status").textContent="Mapa wyczyszczona.";}
-}
-updateMap(true);
 </script>
 </body>
 </html>
