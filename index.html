@@ -60,6 +60,7 @@ small{color:#aaa}
  <div id="place">📍 Oczekiwanie na lokalizację</div>
  <div class="big" id="clock">--:--:--</div>
  <small id="coordinates">Współrzędne GPS: —</small>
+ <div id="countdown" style="margin-top:10px;color:#ffd166;font-weight:bold">⏳ Pobierz dane, aby zobaczyć najbliższą porę</div>
 </div>
 
 <div class="tabs">
@@ -202,6 +203,14 @@ function renderWeather(){
  $("morning").textContent=fmt(sunrise)+" – "+fmt(morningEnd);
  $("evening").textContent=fmt(eveningStart)+" – "+fmt(sunset);
  $("blueEvening").textContent=fmt(blueEveningStart)+" – "+fmt(blueEveningEnd);
+ const now=new Date();
+ if(!isToday) $("countdown").textContent="📅 Podgląd prognozy na jutro";
+ else if(now<blueMorningStart) $("countdown").textContent="⏳ Niebieska godzina rano o "+fmt(blueMorningStart);
+ else if(now<sunrise) $("countdown").textContent="⏳ Złota pora rano startuje o "+fmt(sunrise);
+ else if(now<eveningStart) $("countdown").textContent="⏳ Złota pora wieczorem startuje o "+fmt(eveningStart);
+ else if(now<=sunset) $("countdown").textContent="🔥 TRWA ZŁOTA PORA WIECZOREM (do "+fmt(sunset)+")";
+ else if(now<=blueEveningEnd) $("countdown").textContent="🔵 TRWA NIEBIESKA GODZINA (do "+fmt(blueEveningEnd)+")";
+ else $("countdown").textContent="🌙 Na dziś złote godziny już minęły";
 
  calculateScore({
   precipitation:rain,
