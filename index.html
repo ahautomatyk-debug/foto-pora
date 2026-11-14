@@ -89,10 +89,10 @@ function renderDay() {
  const d = weatherData.daily;
  const isToday = selectedDay === 0;
  
- const temp = isToday ? weatherData.current.temperature_2m : d.temperature_2m_max[1];
- const cloud = isToday ? weatherData.current.cloud_cover : weatherData.hourly.cloud_cover[36];
- const wind = isToday ? weatherData.current.wind_speed_10m : d.wind_speed_10m_max[1];
- const rain = isToday ? weatherData.current.precipitation : d.precipitation_sum[1];
+ const temp = isToday ? weatherData.current.temperature_2m : d.temperature_2m_max;
+ const cloud = isToday ? weatherData.current.cloud_cover : weatherData.hourly.cloud_cover;
+ const wind = isToday ? weatherData.current.wind_speed_10m : d.wind_speed_10m_max;
+ const rain = isToday ? weatherData.current.precipitation : d.precipitation_sum;
 
  el('temp').textContent = (isToday ? '' : 'maks. ') + temp + '°C';
  el('cloud').textContent = (isToday ? '' : 'około ') + cloud + '%';
@@ -149,8 +149,15 @@ function start() {
   el('status').textContent = 'Pobieram pogodę...';
 
   try {
-   const url = 'https://open-meteo.com' + lat + '&longitude=' + lon + '&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m&hourly=cloud_cover&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=2';
-   const response = await fetch(url);
+   const base = 'https://open-meteo.com';
+   const params = '?latitude=' + lat +
+                  '&longitude=' + lon +
+                  '&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m' +
+                  '&hourly=cloud_cover' +
+                  '&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max' +
+                  '&timezone=auto&forecast_days=2';
+
+   const response = await fetch(base + params);
    if (!response.ok) throw Error('Kod błędu: ' + response.status);
    weatherData = await response.json();
 
