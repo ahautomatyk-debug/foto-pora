@@ -127,6 +127,8 @@ small{color:#aaa}
 <button class="main-btn" onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
 <p id="status">Kliknij przycisk i zezwól na lokalizację.</p>
 <button id="installBtn" onclick="installApp()" style="display:none;margin-top:12px;background:#ffd166;color:#111">📲 ZAINSTALUJ APLIKACJĘ NA TELEFONIE</button>
+<div id="iosHint" style="display:none;background:#202126;border:1px solid #ffd166;border-radius:14px;padding:14px;margin-top:12px;font-size:14px;line-height:1.5;color:#eee">📲 <b>Zainstaluj FotoPorę jako aplikację:</b><br>Kliknij ikonę <b>Udostępnij</b> (kwadrat ze strzałką ↑) na dole w Safari i wybierz <b>Do ekranu początkowego</b>.</div>
+<button onclick="shareApp()" style="margin-top:12px;background:#303138;color:#fff">📤 Wyślij aplikację znajomym</button>
 
 </main>
 
@@ -375,6 +377,13 @@ let deferredPrompt;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").style.display="block";});
 function installApp(){
  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{$("installBtn").style.display="none";deferredPrompt=null;});}
+}
+const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent);
+const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+if(isIos&&!isStandalone)$("iosHint").style.display="block";
+function shareApp(){
+ if(navigator.share)navigator.share({title:"FotoPora",text:"Sprawdź moją aplikację dla fotografów:",url:window.location.href});
+ else prompt("Skopiuj link i wyślij znajomym:",window.location.href);
 }
 
 </script>
