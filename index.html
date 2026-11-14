@@ -28,7 +28,6 @@ small{color:#aaa}
 <div class="card">
 <div id="place">📍 Oczekiwanie na lokalizację</div>
 <div class="big" id="clock">--:--:--</div>
-<small id="coords">Współrzędne GPS: —</small>
 </div>
 
 <div class="tabs">
@@ -146,21 +145,8 @@ function start() {
  navigator.geolocation.getCurrentPosition(async pos => {
   const lat = pos.coords.latitude;
   const lon = pos.coords.longitude;
-  el('coords').textContent = 'Współrzędne GPS: ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
-  el('status').textContent = 'Sprawdzam miejscowość i pogodę...';
-
-  try {
-   const geoUrl = 'https://openstreetmap.org' + lat + '&lon=' + lon;
-   const geoRes = await fetch(geoUrl);
-   if (geoRes.ok) {
-    const geoData = await geoRes.json();
-    const addr = geoData.address || {};
-    const city = addr.city || addr.town || addr.village || addr.municipality || 'Twoja lokalizacja';
-    el('place').textContent = '📍 ' + city;
-   }
-  } catch (geoErr) {
-   el('place').textContent = '📍 Twoja lokalizacja';
-  }
+  el('place').textContent = '📍 ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
+  el('status').textContent = 'Pobieram pogodę...';
 
   try {
    const url = 'https://open-meteo.com' + lat + '&longitude=' + lon + '&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m&hourly=cloud_cover&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=2';
