@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FotoPora – Śledzenie Trasy</title>
+<title>FotoPora – Mapa Trasy</title>
+<link rel="stylesheet" href="https://unpkg.com">
+<script src="https://unpkg.com"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101114;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:18px}
+body{margin:0;background:#101114;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:16px}
 main{max-width:500px;margin:auto}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 a.back{color:#ffd166;text-decoration:none;font-weight:bold;background:#202126;padding:10px 14px;border-radius:12px}
-.card{background:#202126;border-radius:18px;padding:16px;margin:12px 0}
-canvas{width:100%;height:300px;background:#16171b;border-radius:14px;border:1px solid #393a40;display:block}
+.card{background:#202126;border-radius:18px;padding:14px;margin:12px 0}
+#map{width:100%;height:340px;border-radius:14px;z-index:1}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .tile{background:#303138;border-radius:12px;padding:12px}
 .tile b{display:block;font-size:20px;margin-top:4px}
@@ -25,13 +27,13 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
 <body>
 <main>
 <div class="top">
- <h2 style="margin:0">🥾 Ślad GPS</h2>
+ <h2 style="margin:0">🗺️ Mapa Trasy</h2>
  <a href="index.html" class="back">← FotoPora</a>
 </div>
 
 <div class="card">
- <canvas id="map" width="460" height="300"></canvas>
- <small style="color:#aaa;display:block;margin-top:8px">🟢 Start trasy • 🔵 Twoja pozycja • 🟡 Przebyta ścieżka</small>
+ <div id="map"></div>
+ <small style="color:#aaa;display:block;margin-top:8px">🟢 Start • 🔵 Ty • 🔴 Przebyta trasa na mapie</small>
  <div class="grid">
   <div class="tile">📏 Dystans<b id="dist">0 m</b></div>
   <div class="tile">🎯 Do startu<b id="toStart">—</b></div>
@@ -43,7 +45,7 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
  <button class="stop" onclick="stopTrack()">⏹ STOP</button>
 </div>
 <button class="clear" onclick="clearTrack()">🗑️ Wyczyść zapisaną trasę</button>
-<p id="status" style="color:#bbb;font-size:14px">Gotowy do zapisu trasy (działa też bez internetu).</p>
+<p id="status" style="color:#bbb;font-size:14px">Kliknij START, aby pobrać pozycję na mapie.</p>
 </main>
 
 <script>
@@ -51,67 +53,62 @@ const $=id=>document.getElementById(id);
 let points=JSON.parse(localStorage.getItem("fp_track")||"[]");
 let watchId=null;
 
+const map=L.map("map").setView([49.75,18.63],14);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+ maxZoom:19,attribution:"© OpenStreetMap"
+}).addTo(map);
+
+const line=L.polyline([],{color:"#ff4444",weight:5}).addTo(map);
+const startPin=L.circleMarker([0,0],{radius:7,color:"#111",fillColor:"#70e69a",fillOpacity:1});
+const mePin=L.circleMarker([0,0],{radius:8,color:"#fff",fillColor:"#3b82f6",fillOpacity:1});
+
 function calcDist(lat1,lon1,lat2,lon2){
  const R=6371000,p=Math.PI/180;
  const a=0.5-Math.cos((lat2-lat1)*p)/2+Math.cos(lat1*p)*Math.cos(lat2*p)*(1-Math.cos((lon2-lon1)*p))/2;
  return 2*R*Math.asin(Math.sqrt(a));
 }
 
-function draw(){
- const c=$("map"),ctx=c.getContext("2d");
- ctx.clearRect(0,0,c.width,c.height);
- if(!points.length){$("dist").textContent="0 m";$("toStart").textContent="—";return;}
-
+function updateMap(centerMe){
+ if(!points.length){$("dist").textContent="0 m";$("toStart").textContent="—";line.setLatLngs([]);startPin.remove();mePin.remove();return;}
  let total=0;
- for(let i=1;i<points.length;i++) total+=calcDist(points[i-1].lat,points[i-1].lon,points[i].lat,points[i].lon);
+ for(let i=1;i<points.length;i++) total+=calcDist(points[i-1][0],points[i-1][1],points[i][0],points[i][1]);
  $("dist").textContent=total>1000?(total/1000).toFixed(2)+" km":Math.round(total)+" m";
 
  const first=points[0],last=points[points.length-1];
- const backDist=calcDist(last.lat,last.lon,first.lat,first.lon);
- $("toStart").textContent=backDist>1000?(backDist/1000).toFixed(2)+" km":Math.round(backDist)+" m";
+ const back=calcDist(last[0],last[1],first[0],first[1]);
+ $("toStart").textContent=back>1000?(back/1000).toFixed(2)+" km":Math.round(back)+" m";
 
- let minLat=Infinity,maxLat=-Infinity,minLon=Infinity,maxLon=-Infinity;
- points.forEach(pt=>{
-  if(pt.lat<minLat)minLat=pt.lat;if(pt.lat>maxLat)maxLat=pt.lat;
-  if(pt.lon<minLon)minLon=pt.lon;if(pt.lon>maxLon)maxLon=pt.lon;
- });
- const pad=40,spanLat=Math.max(maxLat-minLat,0.0005),spanLon=Math.max(maxLon-minLon,0.0005);
- const toX=lon=>pad+((lon-minLon)/spanLon)*(c.width-2*pad);
- const toY=lat=>c.height-pad-((lat-minLat)/spanLat)*(c.height-2*pad);
-
- ctx.strokeStyle="#ffd166";ctx.lineWidth=4;ctx.beginPath();
- points.forEach((pt,i)=>{i===0?ctx.moveTo(toX(pt.lon),toY(pt.lat)):ctx.lineTo(toX(pt.lon),toY(pt.lat));});
- ctx.stroke();
-
- ctx.fillStyle="#70e69a";ctx.beginPath();ctx.arc(toX(first.lon),toY(first.lat),7,0,Math.PI*2);ctx.fill();
- ctx.fillStyle="#64b5f6";ctx.beginPath();ctx.arc(toX(last.lon),toY(last.lat),8,0,Math.PI*2);ctx.fill();
+ line.setLatLngs(points);
+ startPin.setLatLng(first).addTo(map);
+ mePin.setLatLng(last).addTo(map);
+ if(centerMe) map.setView(last,16);
 }
 
 function startTrack(){
  if(!navigator.geolocation){$("status").textContent="Brak GPS.";return;}
  if(watchId!==null)return;
- $("status").textContent="🔴 Nagrywanie śladu GPS aktywne...";
+ $("status").textContent="🔴 Nagrywanie śladu na mapie...";
  watchId=navigator.geolocation.watchPosition(pos=>{
-  const lat=pos.coords.latitude,lon=pos.coords.longitude;
+  const pt=[pos.coords.latitude,pos.coords.longitude];
   if(points.length){
    const last=points[points.length-1];
-   if(calcDist(last.lat,last.lon,lat,lon)<5)return;
+   if(calcDist(last[0],last[1],pt[0],pt[1])<5)return;
   }
-  points.push({lat,lon});
+  points.push(pt);
   localStorage.setItem("fp_track",JSON.stringify(points));
-  draw();
-  $("status").textContent="🔴 Zapisano punktów: "+points.length+" (ostatni: "+new Date().toLocaleTimeString("pl-PL")+")";
+  updateMap(true);
+  $("status").textContent="🔴 Zapisano punktów: "+points.length+" ("+new Date().toLocaleTimeString("pl-PL")+")";
  },err=>{$("status").textContent="❌ Błąd GPS: "+err.message;},{enableHighAccuracy:true,maximumAge:5000});
 }
 
 function stopTrack(){
- if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;$("status").textContent="⏸️ Zapis wstrzymany. Trasa jest bezpieczna w pamięci.";}
+ if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;$("status").textContent="⏸️ Zapis wstrzymany. Ślad zostaje na mapie.";}
 }
 
 function clearTrack(){
- if(confirm("Czy na pewno usunąć zapisaną trasę?")){stopTrack();points=[];localStorage.removeItem("fp_track");draw();$("status").textContent="Trasa wyczyszczona.";}
+ if(confirm("Usunąć zapisaną trasę z mapy?")){stopTrack();points=[];localStorage.removeItem("fp_track");updateMap(false);$("status").textContent="Mapa wyczyszczona.";}
 }
-draw();
+updateMap(true);
 </script>
 </body>
 </html>
