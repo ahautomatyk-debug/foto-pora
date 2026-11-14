@@ -78,6 +78,8 @@ small{color:#aaa}
   <div class="tile">☁️ Zachmurzenie<b id="cloud">—</b></div>
   <div class="tile">💨 Wiatr<b id="wind">—</b></div>
   <div class="tile">🌧️ Opady<b id="rain">—</b></div>
+  <div class="tile">⛰️ Wysokość<b id="alt">—</b></div>
+  <div class="tile">⏲️ Ciśnienie<b id="press">—</b></div>
  </div>
  <p><small id="weatherTime">Pogoda: oczekiwanie na dane</small></p>
 </div>
@@ -159,7 +161,7 @@ async function getWeather(lat,lon){
 
  const url=
  `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
- `&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m`+
+ `&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m,pressure_msl`+
  `&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max,weather_code`+
  `&timezone=auto&forecast_days=2`;
 
@@ -186,6 +188,9 @@ function renderWeather(){
  $("cloud").textContent=isToday?(cloud+"%"):"prognoza";
  $("wind").textContent=(isToday?"":"maks. ")+Math.round(wind)+" km/h";
  $("rain").textContent=rain+" mm";
+  $("alt").textContent=Math.round(data.elevation)+" m n.p.m.";
+ $("press").textContent=isToday?Math.round(data.current.pressure_msl)+" hPa":"—";
+
  const code=data.daily.weather_code[currentDay];
  const isFog=(code===45||code===48);
  const isMist=(!isFog && rain===0 && wind<=7);
