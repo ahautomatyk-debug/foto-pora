@@ -88,6 +88,38 @@ function updateMap(centerMe){
  mePin.setLatLng(last).addTo(map);
  if(centerMe) map.setView(last,16);
 }
+function startTrack(){
+ if(!navigator.geolocation){$("status").textContent="Brak GPS.";return;}
+ if(watchId!==null)return;
+ $("status").textContent="📡 Szukam Twojej pozycji GPS...";
+ navigator.geolocation.getCurrentPosition(pos=>{
+  const pt=[pos.coords.latitude,pos.coords.longitude];
+  if(!points.length){points.push(pt);localStorage.setItem("fp_track",JSON.stringify(points));}
+  updateMap(true);
+  $("status").textContent="🔴 Nagrywanie śladu aktywne! Punktów: "+points.length;
+ },err=>{$("status").textContent="❌ Błąd GPS: "+err.message;},{enableHighAccuracy:true,timeout:15000});
+
+ watchId=navigator.geolocation.watchPosition(pos=>{
+  const pt=[pos.coords.latitude,pos.coords.longitude];
+  if(points.length){
+   const last=points[points.length-1];
+   if(calcDist(last,pt)<5)return;
+  }
+  points.push(pt);
+  localStorage.setItem("fp_track",JSON.stringify(points));
+  updateMap(true);
+  $("status").textContent="🔴 Zapisano punktów: "+points.length+" ("+new Date().toLocaleTimeString("pl-PL")+")";
+ },null,{enableHighAccuracy:true,maximumAge:5000});
+}
+
+function stopTrack(){
+ if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;$("status").textContent="⏸️ Zapis wstrzymany. Ślad zostaje na mapie.";}
+}
+
+function clearTrack(){
+ if(confirm("Usunąć zapisaną trasę z mapy?")){stopTrack();points=[];localStorage.removeItem("fp_track");updateMap(false);$("status").textContent="Mapa wyczyszczona.";}
+}
+updateMap(true);
 
 </script>
 </body>
