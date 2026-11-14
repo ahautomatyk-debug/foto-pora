@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FotoPora</title>
+ <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -122,6 +126,7 @@ small{color:#aaa}
 
 <button class="main-btn" onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
 <p id="status">Kliknij przycisk i zezwól na lokalizację.</p>
+<button id="installBtn" onclick="installApp()" style="display:none;margin-top:12px;background:#ffd166;color:#111">📲 ZAINSTALUJ APLIKACJĘ NA TELEFONIE</button>
 
 </main>
 
@@ -365,6 +370,11 @@ function enableCompass(){
  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
   DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted")window.addEventListener("deviceorientation",handler,true);});
  }else{window.addEventListener("deviceorientationabsolute",handler,true);window.addEventListener("deviceorientation",handler,true);}
+}
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").style.display="block";});
+function installApp(){
+ if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{$("installBtn").style.display="none";deferredPrompt=null;});}
 }
 
 </script>
