@@ -36,7 +36,7 @@ small{color:#aaa}
 <div class="sub">Twój osobisty asystent fotograficzny</div>
 
 <div class="search-box">
- <input type="text" id="cityInput" placeholder="Wpisz miasto (np. Zakopane, Cieszyn)...">
+ <input type="text" id="cityInput" placeholder="Wpisz miasto (np. Cieszyn, Zakopane)...">
  <button class="search-btn" onclick="searchCity()">Szukaj</button>
 </div>
 
@@ -86,145 +86,149 @@ small{color:#aaa}
 </main>
 
 <script>
-const $=id=>document.getElementById(id);
-let savedWeather=null,currentDay=0,sunEvents=[];
+const $ = id => document.getElementById(id);
+let savedWeather = null;
+let currentDay = 0;
+let sunEvents = [];
 
-function clock(){
- const now=new Date();
- $("clock").textContent=now.toLocaleTimeString("pl-PL");
+function clock() {
+ const now = new Date();
+ $("clock").textContent = now.toLocaleTimeString("pl-PL");
  updateCountdown(now);
 }
-setInterval(clock,1000);clock();
+setInterval(clock, 1000);
+clock();
 
-function showTime(v){return v?v.slice(11,16):"—";}
-
-function selectDay(day){
- currentDay=day;
- $("tab0").className="tab"+(day===0?" active":"");
- $("tab1").className="tab"+(day===1?" active":"");
- if(savedWeather) renderWeather();
+function showTime(v) {
+ return v ? v.slice(11, 16) : "—";
 }
 
-function getMoonPhase(date){
- const lp=2551443;
- const newMoon=new Date(1970,0,7,20,35,0);
- const phase=((date.getTime()-newMoon.getTime())/1000)%lp;
- const age=Math.floor(phase/(24*3600));
- const illum=Math.round((1-Math.cos((phase/lp)*2*Math.PI))/2*100);
- let name="Nów 🌑";
- if(age>=2&&age<=6) name="Przybywający sierp 🌒";
- else if(age>=7&&age<=9) name="Pierwsza kwadra 🌓";
- else if(age>=10&&age<=13) name="Przybywający garb 🌔";
- else if(age>=14&&age<=16) name="Pełnia 🌕";
- else if(age>=17&&age<=20) name="Ubywający garb 🌖";
- else if(age>=21&&age<=23) name="Ostatnia kwadra 🌗";
- else if(age>=24) name="Ubywający sierp 🌘";
- return `${name} (${illum}%)`;
+function selectDay(day) {
+ currentDay = day;
+ $("tab0").className = "tab" + (day === 0 ? " active" : "");
+ $("tab1").className = "tab" + (day === 1 ? " active" : "");
+ if (savedWeather) renderWeather();
 }
 
-function updateCountdown(now){
- if(!sunEvents.length||currentDay!==0){
-  $("countdown").textContent=currentDay===1?"📅 Podgląd prognozy na jutro":"⏳ Pobierz dane, aby uruchomić odliczanie";
-  $("countdown").style.color="#aaa";
+function getMoonPhase(date) {
+ const lp = 2551443;
+ const newMoon = new Date(1970, 0, 7, 20, 35, 0);
+ const phase = ((date.getTime() - newMoon.getTime()) / 1000) % lp;
+ const age = Math.floor(phase / (24 * 3600));
+ const illum = Math.round((1 - Math.cos((phase / lp) * 2 * Math.PI)) / 2 * 100);
+ let name = "Nów 🌑";
+ if (age >= 2 && age <= 6) name = "Przybywający sierp 🌒";
+ else if (age >= 7 && age <= 9) name = "Pierwsza kwadra 🌓";
+ else if (age >= 10 && age <= 13) name = "Przybywający garb 🌔";
+ else if (age >= 14 && age <= 16) name = "Pełnia 🌕";
+ else if (age >= 17 && age <= 20) name = "Ubywający garb 🌖";
+ else if (age >= 21 && age <= 23) name = "Ostatnia kwadra 🌗";
+ else if (age >= 24) name = "Ubywający sierp 🌘";
+ return name + " (" + illum + "%)";
+}
+
+function updateCountdown(now) {
+ if (!sunEvents.length || currentDay !== 0) {
+  $("countdown").textContent = currentDay === 1 ? "📅 Podgląd prognozy na jutro" : "⏳ Pobierz dane, aby uruchomić odliczanie";
+  $("countdown").style.color = "#aaa";
   return;
  }
- for(let ev of sunEvents){
-  if(now>=ev.start&&now<=ev.end){
-   const left=Math.ceil((ev.end-now)/60000);
-   $("countdown").textContent=`🔥 TRWA TERAZ: ${ev.name} (zostało ${left} min)`;
-   $("countdown").style.color="#70e69a";
+ for (let i = 0; i < sunEvents.length; i++) {
+  const ev = sunEvents.at(i);
+  if (now >= ev.start && now <= ev.end) {
+   const left = Math.ceil((ev.end - now) / 60000);
+   $("countdown").textContent = "🔥 TRWA TERAZ: " + ev.name + " (zostało " + left + " min)";
+   $("countdown").style.color = "#70e69a";
    return;
   }
-  if(now<ev.start){
-   const diff=Math.floor((ev.start-now)/1000);
-   const h=Math.floor(diff/3600);
-   const m=Math.floor((diff%3600)/60);
-   $("countdown").textContent=`⏳ Za ${h} godz. ${m} min: ${ev.name}`;
-   $("countdown").style.color="#ffd166";
+  if (now < ev.start) {
+   const diff = Math.floor((ev.start - now) / 1000);
+   const h = Math.floor(diff / 3600);
+   const m = Math.floor((diff % 3600) / 60);
+   $("countdown").textContent = "⏳ Za " + h + " godz. " + m + " min: " + ev.name;
+   $("countdown").style.color = "#ffd166";
    return;
   }
  }
- $("countdown").textContent="🌙 Na dziś wszystkie złote godziny już minęły";
- $("countdown").style.color="#64b5f6";
+ $("countdown").textContent = "🌙 Na dziś wszystkie złote godziny już minęły";
+ $("countdown").style.color = "#64b5f6";
 }
 
-async function searchCity(){
- const q=$("cityInput").value.trim();
- if(!q)return;
- $("status").textContent="Szukam miasta...";
- try{
-  const res=await fetch(`https://open-meteo.com{encodeURIComponent(q)}&count=1&language=pl&format=json`);
-  const data=await res.json();
-  if(!data.results||!data.results.length)throw Error("Nie znaleziono miasta");
-  const c=data.results[0];
-  $("place").textContent=`📍 ${c.name}, ${c.country||""}`;
-  $("coordinates").textContent=`Współrzędne: ${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}`;
-  await getWeather(c.latitude,c.longitude);
-  $("status").textContent="✅ Pobrano dane dla wybranego miasta.";
- }catch(e){$("status").textContent="❌ "+e.message;}
+async function searchCity() {
+ const q = $("cityInput").value.trim();
+ if (!q) return;
+ $("status").textContent = "Szukam miasta...";
+ try {
+  const params = new URLSearchParams({ name: q, count: 1, language: "pl", format: "json" });
+  const res = await fetch("https://open-meteo.com?" + params.toString());
+  const data = await res.json();
+  if (!data.results || !data.results.length) throw Error("Nie znaleziono miasta");
+  const c = data.results.at(0);
+  $("place").textContent = "📍 " + c.name + ", " + (c.country || "");
+  $("coordinates").textContent = "Współrzędne: " + c.latitude.toFixed(4) + ", " + c.longitude.toFixed(4);
+  await getWeather(c.latitude, c.longitude);
+  $("status").textContent = "✅ Pobrano dane dla wybranego miasta.";
+ } catch (e) {
+  $("status").textContent = "❌ " + e.message;
+ }
 }
 
-async function getPlace(lat,lon){
- $("place").textContent="📍 Rozpoznaję miejscowość...";
- try{
-  const res=await fetch(`https://bigdatacloud.net{lat}&longitude=${lon}&localityLanguage=pl`);
-  const data=await res.json();
-  const town=data.city||data.locality||data.principalSubdivision||"Twoja lokalizacja";
-  $("place").textContent=`📍 ${town}, ${data.countryName||"Polska"}`;
- }catch(e){$("place").textContent=`📍 ${lat.toFixed(4)}, ${lon.toFixed(4)}`;}
+async function getPlace(lat, lon) {
+ $("place").textContent = "📍 Rozpoznaję miejscowość...";
+ try {
+  const params = new URLSearchParams({ latitude: lat, longitude: lon, localityLanguage: "pl" });
+  const res = await fetch("https://bigdatacloud.net?" + params.toString());
+  const data = await res.json();
+  const town = data.city || data.locality || data.principalSubdivision || "Twoja lokalizacja";
+  $("place").textContent = "📍 " + town + ", " + (data.countryName || "Polska");
+ } catch (e) {
+  $("place").textContent = "📍 " + lat.toFixed(4) + ", " + lon.toFixed(4);
+ }
 }
 
-async function getWeather(lat,lon){
- $("status").textContent="Pobieram pogodę...";
- const url=`https://open-meteo.com{lat}&longitude=${lon}&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=2`;
- const res=await fetch(url);
- if(!res.ok)throw Error("Błąd serwera pogody");
- savedWeather=await res.json();
+async function getWeather(lat, lon) {
+ $("status").textContent = "Pobieram pogodę...";
+ const params = new URLSearchParams({
+  latitude: lat,
+  longitude: lon,
+  current: "temperature_2m,precipitation,cloud_cover,wind_speed_10m",
+  daily: "sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max",
+  timezone: "auto",
+  forecast_days: 2
+ });
+ const res = await fetch("https://open-meteo.com?" + params.toString());
+ if (!res.ok) throw Error("Błąd serwera pogody");
+ savedWeather = await res.json();
  renderWeather();
- $("weatherTime").textContent="Aktualizacja: "+new Date().toLocaleTimeString("pl-PL");
+ $("weatherTime").textContent = "Aktualizacja: " + new Date().toLocaleTimeString("pl-PL");
 }
 
-function renderWeather(){
- const d=savedWeather,isToday=currentDay===0;
- const temp=isToday?d.current.temperature_2m:d.daily.temperature_2m_max[1];
- const cloud=isToday?d.current.cloud_cover:"—";
- const wind=isToday?d.current.wind_speed_10m:d.daily.wind_speed_10m_max[1];
- const rain=isToday?d.current.precipitation:d.daily.precipitation_sum[1];
+function renderWeather() {
+ const d = savedWeather;
+ const isToday = currentDay === 0;
+ const temp = isToday ? d.current.temperature_2m : d.daily.temperature_2m_max.at(currentDay);
+ const cloud = isToday ? d.current.cloud_cover : "—";
+ const wind = isToday ? d.current.wind_speed_10m : d.daily.wind_speed_10m_max.at(currentDay);
+ const rain = isToday ? d.current.precipitation : d.daily.precipitation_sum.at(currentDay);
 
- $("temp").textContent=(isToday?"":"maks. ")+Math.round(temp)+"°C";
- $("cloud").textContent=isToday?(cloud+"%"):"prognoza";
- $("wind").textContent=(isToday?"":"maks. ")+Math.round(wind)+" km/h";
- $("rain").textContent=rain+" mm";
+ $("temp").textContent = (isToday ? "" : "maks. ") + Math.round(temp) + "°C";
+ $("cloud").textContent = isToday ? (cloud + "%") : "prognoza";
+ $("wind").textContent = (isToday ? "" : "maks. ") + Math.round(wind) + " km/h";
+ $("rain").textContent = rain + " mm";
 
- $("rise").textContent=showTime(d.daily.sunrise[currentDay]);
- $("set").textContent=showTime(d.daily.sunset[currentDay]);
+ const riseStr = d.daily.sunrise.at(currentDay);
+ const setStr = d.daily.sunset.at(currentDay);
+ $("rise").textContent = showTime(riseStr);
+ $("set").textContent = showTime(setStr);
 
- const sr=new Date(d.daily.sunrise[currentDay]),ss=new Date(d.daily.sunset[currentDay]);
- const bm1=new Date(sr.getTime()-35*60000),bm2=new Date(sr.getTime()-10*60000);
- const gm2=new Date(sr.getTime()+50*60000);
- const ge1=new Date(ss.getTime()-50*60000);
- const be1=new Date(ss.getTime()+10*60000),be2=new Date(ss.getTime()+35*60000);
+ const sr = new Date(riseStr);
+ const ss = new Date(setStr);
+ const bm1 = new Date(sr.getTime() - 35 * 60000);
+ const bm2 = new Date(sr.getTime() - 10 * 60000);
+ const gm2 = new Date(sr.getTime() + 50 * 60000);
+ const ge1 = new Date(ss.getTime() - 50 * 60000);
+ const be1 = new Date(ss.getTime() + 10 * 60000);
+ const be2 = new Date(ss.getTime() + 35 * 60000);
 
- const fmt=x=>x.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit",timeZone:d.timezone});
- $("blueMorning").textContent=fmt(bm1)+" – "+fmt(bm2);
- $("morning").textContent=fmt(sr)+" – "+fmt(gm2);
- $("evening").textContent=fmt(ge1)+" – "+fmt(ss);
- $("blueEvening").textContent=fmt(be1)+" – "+fmt(be2);
- $("moon").textContent=getMoonPhase(sr);
-
- if(isToday){
-  sunEvents=[
-   {name:"Niebieska godzina rano",start:bm1,end:bm2},
-   {name:"Złota pora rano",start:sr,end:gm2},
-   {name:"Złota pora wieczorem",start:ge1,end:ss},
-   {name:"Niebieska godzina wieczorem",start:be1,end:be2}
-  ];
- }
- calculateScore({precipitation:rain,wind_speed_10m:wind,cloud_cover:isToday?cloud:40,temperature_2m:temp});
-}
-
-function calculateScore(w){
- let pts=5,reasons=[],tips=[];
- if(w.precipitation===0){pts+=1;reasons.push("brak opadów");}
- else{pts-=2;reasons.push("opady");tips.push("Zabierz osłonę przeciwdeszczową na aparat i obiektyw.");}
-
+ const fmt = x => x.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: d.timezone });
+ $("blueMorning").textContent = fmt(bm1) + " – " + fmt(bm2);
