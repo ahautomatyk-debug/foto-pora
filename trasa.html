@@ -54,7 +54,8 @@ let points=JSON.parse(localStorage.getItem("fp_track")||"[]");
 let watchId=null;
 
 const map=L.map("map").setView([49.75,18.63],14);
-const tileUrl="https://"+"tile.openstreetmap.org"+"/{z}/{x}/{y}.png";
+const tileUrl="https://"+"a."+"tile.openstreetmap.org"+"/{z}/{x}/{y}.png";
+
 L.tileLayer(tileUrl,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
 
 const line=L.polyline([],{color:"#ff4444",weight:5}).addTo(map);
