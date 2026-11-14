@@ -385,6 +385,7 @@ function shareApp(){
  if(navigator.share)navigator.share({title:"FotoPora",text:"Sprawdź moją aplikację dla fotografów:",url:window.location.href});
  else prompt("Skopiuj link i wyślij znajomym:",window.location.href);
 }
+window.addEventListener("load", start);
 
 </script>
 </body>
