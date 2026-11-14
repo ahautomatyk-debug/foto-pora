@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -26,15 +25,23 @@ h1{font-size:30px;margin-bottom:5px}
  gap:12px
 }
 .row:last-child{border:0}
-button{
+.tabs{display:flex;gap:10px;margin:14px 0}
+.tab{
+ flex:1;padding:12px;background:#202126;color:#aaa;
+ border:1px solid #393a40;border-radius:14px;
+ font-weight:bold;cursor:pointer;font-size:15px
+}
+.tab.active{background:#fff;color:#111;border-color:#fff}
+button.main-btn{
  width:100%;padding:17px;border:0;
  border-radius:14px;font-size:17px;
- font-weight:bold;background:#fff;color:#111
+ font-weight:bold;background:#fff;color:#111;cursor:pointer
 }
 small{color:#aaa}
 .green{color:#70e69a}
 .yellow{color:#ffd166}
 .red{color:#ff7777}
+.blue{color:#64b5f6}
 .grid{
  display:grid;grid-template-columns:1fr 1fr;gap:10px
 }
@@ -55,6 +62,11 @@ small{color:#aaa}
  <small id="coordinates">Współrzędne GPS: —</small>
 </div>
 
+<div class="tabs">
+ <button class="tab active" id="tab0" onclick="selectDay(0)">📅 DZIŚ</button>
+ <button class="tab" id="tab1" onclick="selectDay(1)">🌅 JUTRO</button>
+</div>
+
 <div class="card">
  <div class="grid">
   <div class="tile">🌡️ Temperatura<b id="temp">—</b></div>
@@ -68,8 +80,10 @@ small{color:#aaa}
 <div class="card">
  <div class="row"><span>🌅 Wschód słońca</span><b id="rise">—</b></div>
  <div class="row"><span>🌇 Zachód słońca</span><b id="set">—</b></div>
- <div class="row"><span>🟠 Złota pora rano</span><b id="morning">—</b></div>
- <div class="row"><span>🟠 Złota pora wieczorem</span><b id="evening">—</b></div>
+ <div class="row"><span>🔵 Niebieska godzina rano</span><b class="blue" id="blueMorning">—</b></div>
+ <div class="row"><span>🟠 Złota pora rano</span><b class="yellow" id="morning">—</b></div>
+ <div class="row"><span>🟠 Złota pora wieczorem</span><b class="yellow" id="evening">—</b></div>
+ <div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blueEvening">—</b></div>
 </div>
 
 <div class="card">
@@ -79,13 +93,15 @@ small{color:#aaa}
  <p id="reason"></p>
 </div>
 
-<button onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
+<button class="main-btn" onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
 <p id="status">Kliknij przycisk i zezwól na lokalizację.</p>
 
 </main>
 
 <script>
 const $=id=>document.getElementById(id);
+let savedWeather=null;
+let currentDay=0;
 
 function clock(){
  $("clock").textContent=new Date().toLocaleTimeString("pl-PL");
@@ -95,6 +111,13 @@ clock();
 
 function showTime(value){
  return value ? value.slice(11,16) : "—";
+}
+
+function selectDay(day){
+ currentDay=day;
+ $("tab0").className="tab"+(day===0?" active":"");
+ $("tab1").className="tab"+(day===1?" active":"");
+ if(savedWeather) renderWeather();
 }
 
 async function getPlace(lat,lon){
@@ -130,39 +153,61 @@ async function getWeather(lat,lon){
  const url=
  `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
  `&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m`+
- `&daily=sunrise,sunset&timezone=auto&forecast_days=1`;
+ `&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max`+
+ `&timezone=auto&forecast_days=2`;
 
  const response=await fetch(url);
  if(!response.ok) throw Error("Nie można pobrać pogody");
 
- const data=await response.json();
- const w=data.current;
+ savedWeather=await response.json();
+ renderWeather();
 
- $("temp").textContent=Math.round(w.temperature_2m)+"°C";
- $("cloud").textContent=w.cloud_cover+"%";
- $("wind").textContent=Math.round(w.wind_speed_10m)+" km/h";
- $("rain").textContent=w.precipitation+" mm";
+ $("weatherTime").textContent=
+  "Aktualizacja: "+new Date().toLocaleTimeString("pl-PL");
+}
 
- $("rise").textContent=showTime(data.daily.sunrise[0]);
- $("set").textContent=showTime(data.daily.sunset[0]);
+function renderWeather(){
+ const data=savedWeather;
+ const isToday=currentDay===0;
 
- const sunrise=new Date(data.daily.sunrise[0]);
- const sunset=new Date(data.daily.sunset[0]);
+ const temp=isToday ? data.current.temperature_2m : data.daily.temperature_2m_max[1];
+ const cloud=isToday ? data.current.cloud_cover : "—";
+ const wind=isToday ? data.current.wind_speed_10m : data.daily.wind_speed_10m_max[1];
+ const rain=isToday ? data.current.precipitation : data.daily.precipitation_sum[1];
 
+ $("temp").textContent=(isToday?"":"maks. ")+Math.round(temp)+"°C";
+ $("cloud").textContent=isToday?(cloud+"%"):"prognoza";
+ $("wind").textContent=(isToday?"":"maks. ")+Math.round(wind)+" km/h";
+ $("rain").textContent=rain+" mm";
+
+ $("rise").textContent=showTime(data.daily.sunrise[currentDay]);
+ $("set").textContent=showTime(data.daily.sunset[currentDay]);
+
+ const sunrise=new Date(data.daily.sunrise[currentDay]);
+ const sunset=new Date(data.daily.sunset[currentDay]);
+
+ const blueMorningStart=new Date(sunrise.getTime()-35*60000);
+ const blueMorningEnd=new Date(sunrise.getTime()-10*60000);
  const morningEnd=new Date(sunrise.getTime()+50*60000);
+
  const eveningStart=new Date(sunset.getTime()-50*60000);
+ const blueEveningStart=new Date(sunset.getTime()+10*60000);
+ const blueEveningEnd=new Date(sunset.getTime()+35*60000);
 
  const fmt=d=>d.toLocaleTimeString("pl-PL",{
   hour:"2-digit",minute:"2-digit",timeZone:data.timezone
  });
 
+ $("blueMorning").textContent=fmt(blueMorningStart)+" – "+fmt(blueMorningEnd);
  $("morning").textContent=fmt(sunrise)+" – "+fmt(morningEnd);
  $("evening").textContent=fmt(eveningStart)+" – "+fmt(sunset);
+ $("blueEvening").textContent=fmt(blueEveningStart)+" – "+fmt(blueEveningEnd);
 
- $("weatherTime").textContent=
-  "Aktualizacja: "+new Date().toLocaleTimeString("pl-PL");
-
- calculateScore(w);
+ calculateScore({
+  precipitation:rain,
+  wind_speed_10m:wind,
+  cloud_cover:isToday?cloud:40
+ });
 }
 
 function calculateScore(w){
