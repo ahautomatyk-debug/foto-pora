@@ -179,3 +179,201 @@ function start() {
 </script>
 </body>
 </html>
+Używaj kodu z rozwagą.
+4. Kliknij zielony przycisk Commit changes (dwa razy, tak jak poprzednio).
+5. Odczekaj około minutę, aż GitHub zaktualizuje stronę, i odśwież https://github.io (jeśli nadal zobaczysz starą wersję, odśwież stronę wymuszając wyczyszczenie pamięci podręcznej lub zamknij i otwórz kartę).
+Daj znać, jak działa FotoPora 2.0 z nazwą Twojej miejscowości i przełącznikiem na jutro! Jeśli zechcesz dodać kolejne bajery (np. kompas wskazujący kierunek wschodu/zachodu słońca lub ręczne wyszukiwanie dowolnego miasta przed wyjazdem), daj znać.
+Odpowiedzi wygenerowane przez AI mogą zawierać błędy. Więcej informacji
+
+taki błąd z pobieraniem lokalizacji
+
+Przyczyną błędu jest zniekształcony adres URL do serwisu mapowego podczas kopiowania kodu. W komunikacie na dole ekranu widać, że adres skrócił się do https://openstreetmap.org{lat}&lon=19.0237815, przez co przeglądarka nie może połączyć się z serwerem.
+Dodatkowo warto zabezpieczyć kod tak, aby nawet w przypadku problemu z nazwą miasta aplikacja zawsze pobrała pogodę i złotą godzinę.
+
+Jak naprawić ten błąd:
+
+1. Otwórz plik index.html w swoim repozytorium na GitHubie i kliknij ikonę ołówka (edycji).
+2. Zamień cały kod na poniższą, poprawioną wersję (używa tradycyjnego łączenia tekstu znakiem +, co zapobiega błędom przy kopiowaniu):
+html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FotoPora 2.0</title>
+<style>
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;padding:20px}
+main{max-width:480px;margin:auto}
+h1{font-size:28px;margin-bottom:4px}
+.card{background:#1e1e1e;border-radius:18px;padding:18px;margin:14px 0;border:1px solid #333}
+.big{font-size:28px;font-weight:bold;margin:8px 0}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #333}
+.row:last-child{border-bottom:none}
+.tabs{display:flex;gap:10px;margin:14px 0}
+.tab{flex:1;padding:12px;background:#222;color:#aaa;border:1px solid #444;border-radius:12px;font-weight:bold;cursor:pointer}
+.tab.active{background:#ff9f1c;color:#111;border-color:#ff9f1c}
+button.main-btn{width:100%;padding:16px;border:0;border-radius:12px;font-size:17px;font-weight:bold;background:#4cc9f0;color:#111;cursor:pointer;margin-top:6px}
+.green{color:#7ee787}.yellow{color:#ffd166}.red{color:#ff7777}.blue{color:#64b5f6}
+small{color:#aaa}
+</style>
+</head>
+<body>
+<main>
+<h1>📸 FotoPora <small style="font-size:14px;color:#ff9f1c">2.0</small></h1>
+<small>Twój osobisty asystent fotograficzny</small>
+
+<div class="card">
+<div id="place">📍 Oczekiwanie na lokalizację</div>
+<div class="big" id="clock">--:--:--</div>
+<small id="coords">Współrzędne GPS: —</small>
+</div>
+
+<div class="tabs">
+<button class="tab active" id="btn-today" onclick="setDay(0)">📅 DZIŚ</button>
+<button class="tab" id="btn-tomorrow" onclick="setDay(1)">🌅 JUTRO</button>
+</div>
+
+<div class="card">
+<div class="row"><span>🌡️ Temperatura</span><b id="temp">—</b></div>
+<div class="row"><span>☁️ Zachmurzenie</span><b id="cloud">—</b></div>
+<div class="row"><span>💨 Wiatr</span><b id="wind">—</b></div>
+<div class="row"><span>🌧️ Opady</span><b id="rain">—</b></div>
+</div>
+
+<div class="card">
+<div class="row"><span>🌅 Wschód słońca</span><b id="rise">—</b></div>
+<div class="row"><span>🌇 Zachód słońca</span><b id="set">—</b></div>
+<div class="row"><span>🔵 Niebieska godzina rano</span><b class="blue" id="blue-m">—</b></div>
+<div class="row"><span>🟠 Złota pora rano</span><b class="yellow" id="gold-m">—</b></div>
+<div class="row"><span>🟠 Złota pora wieczorem</span><b class="yellow" id="gold-e">—</b></div>
+<div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blue-e">—</b></div>
+</div>
+
+<div class="card">
+<small>OCENA WARUNKÓW FOTOGRAFICZNYCH</small>
+<div class="big" id="score">—/10</div>
+<div id="verdict">Czekam na dane</div>
+<p id="reason" style="margin-bottom:0;color:#ccc;font-size:14px"></p>
+</div>
+
+<button class="main-btn" onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
+<p id="status"><small>Kliknij przycisk i zezwól na lokalizację.</small></p>
+</main>
+
+<script>
+const el = id => document.getElementById(id);
+let weatherData = null;
+let selectedDay = 0;
+
+function time(v) {
+ return new Date(v).toLocaleTimeString('pl-PL', {hour:'2-digit', minute:'2-digit'});
+}
+function addMins(date, mins) {
+ return new Date(date.getTime() + mins * 60000);
+}
+function tick() {
+ el('clock').textContent = new Date().toLocaleTimeString('pl-PL');
+}
+setInterval(tick, 1000); tick();
+
+function setDay(dayIndex) {
+ selectedDay = dayIndex;
+ el('btn-today').className = 'tab' + (dayIndex === 0 ? ' active' : '');
+ el('btn-tomorrow').className = 'tab' + (dayIndex === 1 ? ' active' : '');
+ if (weatherData) renderDay();
+}
+
+function renderDay() {
+ const d = weatherData.daily;
+ const isToday = selectedDay === 0;
+ 
+ const temp = isToday ? weatherData.current.temperature_2m : d.temperature_2m_max[1];
+ const cloud = isToday ? weatherData.current.cloud_cover : d.cloud_cover_mean[1];
+ const wind = isToday ? weatherData.current.wind_speed_10m : d.wind_speed_10m_max[1];
+ const rain = isToday ? weatherData.current.precipitation : d.precipitation_sum[1];
+
+ el('temp').textContent = (isToday ? '' : 'maks. ') + temp + '°C';
+ el('cloud').textContent = (isToday ? '' : 'śr. ') + cloud + '%';
+ el('wind').textContent = (isToday ? '' : 'maks. ') + wind + ' km/h';
+ el('rain').textContent = rain + ' mm';
+
+ const rise = new Date(d.sunrise[selectedDay]);
+ const set = new Date(d.sunset[selectedDay]);
+
+ el('rise').textContent = time(rise);
+ el('set').textContent = time(set);
+
+ el('blue-m').textContent = time(addMins(rise, -35)) + ' – ' + time(addMins(rise, -10));
+ el('gold-m').textContent = time(rise) + ' – ' + time(addMins(rise, 50));
+ el('gold-e').textContent = time(addMins(set, -50)) + ' – ' + time(set);
+ el('blue-e').textContent = time(addMins(set, 10)) + ' – ' + time(addMins(set, 35));
+
+ let points = 5;
+ let reasons = [];
+
+ if (rain === 0) { points++; reasons.push('brak opadów'); }
+ else { points -= 2; reasons.push('opady'); }
+
+ if (wind <= 10) { points += 2; reasons.push('słaby wiatr'); }
+ else if (wind > 25) { points -= 2; reasons.push('silny wiatr'); }
+
+ if (cloud >= 15 && cloud <= 65) { points += 2; reasons.push('malownicze chmury'); }
+ else if (cloud > 85) { points -= 1; reasons.push('pełne zachmurzenie'); }
+ else { reasons.push('czyste niebo'); }
+
+ points = Math.max(1, Math.min(10, points));
+ el('score').textContent = points + '/10';
+ el('score').className = 'big ' + (points >= 8 ? 'green' : points >= 5 ? 'yellow' : 'red');
+
+ el('verdict').textContent =
+  points >= 8 ? '🟢 IDEALNIE NA PLENER' :
+  points >= 5 ? '🟡 DOBRE WARUNKI' :
+  '🔴 TRUDNE WARUNKI';
+
+ el('reason').textContent = reasons.join(' • ');
+}
+
+function start() {
+ if (!navigator.geolocation) {
+  el('status').textContent = 'GPS niedostępny w tej przeglądarce';
+  return;
+ }
+ el('status').textContent = 'Pobieram lokalizację...';
+
+ navigator.geolocation.getCurrentPosition(async pos => {
+  const lat = pos.coords.latitude;
+  const lon = pos.coords.longitude;
+  el('coords').textContent = 'Współrzędne GPS: ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
+  el('status').textContent = 'Sprawdzam miejscowość i pogodę...';
+
+  try {
+   const geoUrl = 'https://openstreetmap.org' + lat + '&lon=' + lon;
+   const geoRes = await fetch(geoUrl);
+   if (geoRes.ok) {
+    const geoData = await geoRes.json();
+    const addr = geoData.address || {};
+    const city = addr.city || addr.town || addr.village || addr.municipality || 'Twoja lokalizacja';
+    el('place').textContent = '📍 ' + city;
+   }
+  } catch (geoErr) {
+   el('place').textContent = '📍 Twoja lokalizacja';
+  }
+
+  try {
+   const url = 'https://open-meteo.com' + lat + '&longitude=' + lon + '&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,cloud_cover_mean,wind_speed_10m_max&timezone=auto&forecast_days=2';
+   const response = await fetch(url);
+   if (!response.ok) throw Error('Błąd serwera pogody');
+   weatherData = await response.json();
+
+   renderDay();
+   el('status').textContent = 'Dane zaktualizowane!';
+  } catch (e) {
+   el('status').textContent = 'Błąd pogody: ' + e.message;
+  }
+ }, err => {
+  el('status').textContent = 'Błąd GPS: ' + err.message;
+ }, { enableHighAccuracy: true, timeout: 15000 });
+}
+</script>
+</body>
+</html>
