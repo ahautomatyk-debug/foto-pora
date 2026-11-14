@@ -92,6 +92,8 @@ small{color:#aaa}
  <div class="row"><span>🟠 Złota pora wieczorem</span><b class="yellow" id="evening">—</b></div>
  <div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blueEvening">—</b></div>
   <div class="row"><span>🌫️ Szansa na mgłę</span><b id="fog">—</b></div>
+  <div class="row"><span>🧭 Kierunek słońca</span><b id="sunDir">—</b></div>
+
 
 </div>
 
@@ -219,6 +221,17 @@ function renderWeather(){
  $("morning").textContent=fmt(sunrise)+" – "+fmt(morningEnd);
  $("evening").textContent=fmt(eveningStart)+" – "+fmt(sunset);
  $("blueEvening").textContent=fmt(blueEveningStart)+" – "+fmt(blueEveningEnd);
+  const latRad=data.latitude*Math.PI/180;
+ const dayOfYear=Math.floor((sunrise-new Date(sunrise.getFullYear(),0,0))/86400000);
+ const decl=23.44*Math.sin((2*Math.PI/365)*(dayOfYear-81))*Math.PI/180;
+ let cosAz=Math.sin(decl)/Math.cos(latRad);
+ cosAz=Math.max(-1,Math.min(1,cosAz));
+ const riseAz=Math.round(Math.acos(cosAz)*180/Math.PI);
+ const setAz=360-riseAz;
+ const dirs=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+ const dir=deg=>dirs[Math.round(deg/22.5)%16];
+ $("sunDir").textContent=`🌅 ${riseAz}° (${dir(riseAz)})  •  🌇 ${setAz}° (${dir(setAz)})`;
+
  const now=new Date();
  if(!isToday) $("countdown").textContent="📅 Podgląd prognozy na jutro";
  else if(now<blueMorningStart) $("countdown").textContent="⏳ Niebieska godzina rano o "+fmt(blueMorningStart);
