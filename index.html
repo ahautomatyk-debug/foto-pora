@@ -3,48 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FotoPora 4.0</title>
+<title>FotoPora</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101114;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:20px}
+body{
+ margin:0;background:#101114;color:white;
+ font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+ padding:20px
+}
 main{max-width:500px;margin:auto}
-h1{font-size:28px;margin-bottom:4px}
-.sub{color:#aaa;margin-bottom:16px}
-.card{background:#202126;border-radius:18px;padding:18px;margin:14px 0}
-.big{font-size:28px;font-weight:bold;margin:8px 0}
-.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #393a40;gap:10px}
+h1{font-size:30px;margin-bottom:5px}
+.sub{color:#aaa;margin-bottom:20px}
+.card{
+ background:#202126;border-radius:18px;
+ padding:18px;margin:14px 0
+}
+.big{font-size:29px;font-weight:bold;margin:12px 0}
+.row{
+ display:flex;justify-content:space-between;
+ padding:11px 0;border-bottom:1px solid #393a40;
+ gap:12px
+}
 .row:last-child{border:0}
-.search-box{display:flex;gap:8px;margin:14px 0}
-input{flex:1;padding:14px;border-radius:12px;border:1px solid #393a40;background:#202126;color:#fff;font-size:15px}
-.search-btn{padding:14px 18px;border:0;border-radius:12px;background:#ff9f1c;color:#111;font-weight:bold;cursor:pointer}
 .tabs{display:flex;gap:10px;margin:14px 0}
-.tab{flex:1;padding:12px;background:#202126;color:#aaa;border:1px solid #393a40;border-radius:14px;font-weight:bold;cursor:pointer}
+.tab{
+ flex:1;padding:12px;background:#202126;color:#aaa;
+ border:1px solid #393a40;border-radius:14px;
+ font-weight:bold;cursor:pointer;font-size:15px
+}
 .tab.active{background:#fff;color:#111;border-color:#fff}
-.main-btn{width:100%;padding:17px;border:0;border-radius:14px;font-size:17px;font-weight:bold;background:#fff;color:#111;cursor:pointer}
+button.main-btn{
+ width:100%;padding:17px;border:0;
+ border-radius:14px;font-size:17px;
+ font-weight:bold;background:#fff;color:#111;cursor:pointer
+}
 small{color:#aaa}
-.green{color:#70e69a}.yellow{color:#ffd166}.red{color:#ff7777}.blue{color:#64b5f6}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.green{color:#70e69a}
+.yellow{color:#ffd166}
+.red{color:#ff7777}
+.blue{color:#64b5f6}
+.grid{
+ display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
 .tile{background:#303138;border-radius:12px;padding:13px}
-.tile b{display:block;font-size:20px;margin-top:6px}
-#countdown{background:#303138;padding:10px 14px;border-radius:10px;margin-top:10px;font-size:14px;font-weight:bold;color:#ffd166}
-#tips{margin:8px 0 0;padding-left:18px;color:#ddd;font-size:14px;line-height:1.6}
+.tile b{display:block;font-size:21px;margin-top:7px}
+#status{font-size:14px;color:#bbb;line-height:1.5}
 </style>
 </head>
 <body>
 <main>
-<h1>📸 FotoPora <small style="color:#ff9f1c;font-size:14px">4.0</small></h1>
-<div class="sub">Twój osobisty asystent fotograficzny</div>
 
-<div class="search-box">
- <input type="text" id="cityInput" placeholder="Wpisz miasto (np. Zakopane, Cieszyn)...">
- <button class="search-btn" onclick="searchCity()">Szukaj</button>
-</div>
+<h1>📸 FotoPora</h1>
+<div class="sub">Twój osobisty asystent fotograficzny</div>
 
 <div class="card">
  <div id="place">📍 Oczekiwanie na lokalizację</div>
  <div class="big" id="clock">--:--:--</div>
  <small id="coordinates">Współrzędne GPS: —</small>
- <div id="countdown">⏳ Pobierz dane, aby uruchomić odliczanie</div>
 </div>
 
 <div class="tabs">
@@ -59,7 +74,7 @@ small{color:#aaa}
   <div class="tile">💨 Wiatr<b id="wind">—</b></div>
   <div class="tile">🌧️ Opady<b id="rain">—</b></div>
  </div>
- <p style="margin-bottom:0"><small id="weatherTime">Pogoda: oczekiwanie na dane</small></p>
+ <p><small id="weatherTime">Pogoda: oczekiwanie na dane</small></p>
 </div>
 
 <div class="card">
@@ -69,34 +84,34 @@ small{color:#aaa}
  <div class="row"><span>🟠 Złota pora rano</span><b class="yellow" id="morning">—</b></div>
  <div class="row"><span>🟠 Złota pora wieczorem</span><b class="yellow" id="evening">—</b></div>
  <div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blueEvening">—</b></div>
- <div class="row"><span>🌙 Faza księżyca</span><b id="moon">—</b></div>
 </div>
 
 <div class="card">
  <small>OCENA WARUNKÓW FOTOGRAFICZNYCH</small>
  <div class="big" id="score">—/10</div>
  <div id="verdict">Czekam na dane</div>
- <p id="reason" style="color:#ccc;font-size:14px"></p>
- <small>WSKAZÓWKI DO APARATU</small>
- <ul id="tips"><li>Pobierz pogodę, aby zobaczyć podpowiedzi ustawień.</li></ul>
+ <p id="reason"></p>
 </div>
 
-<button class="main-btn" onclick="start()">📍 UŻYJ MOJEGO GPS</button>
-<p id="status" style="font-size:14px;color:#bbb">Wybierz GPS lub wpisz miasto u góry.</p>
+<button class="main-btn" onclick="start()">📍 POBIERZ GPS I POGODĘ</button>
+<p id="status">Kliknij przycisk i zezwól na lokalizację.</p>
+
 </main>
 
 <script>
 const $=id=>document.getElementById(id);
-let savedWeather=null,currentDay=0,sunEvents=[];
+let savedWeather=null;
+let currentDay=0;
 
 function clock(){
- const now=new Date();
- $("clock").textContent=now.toLocaleTimeString("pl-PL");
- updateCountdown(now);
+ $("clock").textContent=new Date().toLocaleTimeString("pl-PL");
 }
-setInterval(clock,1000);clock();
+setInterval(clock,1000);
+clock();
 
-function showTime(v){return v?v.slice(11,16):"—";}
+function showTime(value){
+ return value ? value.slice(11,16) : "—";
+}
 
 function selectDay(day){
  currentDay=day;
@@ -105,126 +120,169 @@ function selectDay(day){
  if(savedWeather) renderWeather();
 }
 
-function getMoonPhase(date){
- const lp=2551443;
- const newMoon=new Date(1970,0,7,20,35,0);
- const phase=((date.getTime()-newMoon.getTime())/1000)%lp;
- const age=Math.floor(phase/(24*3600));
- const illum=Math.round((1-Math.cos((phase/lp)*2*Math.PI))/2*100);
- let name="Nów 🌑";
- if(age>=2&&age<=6) name="Przybywający sierp 🌒";
- else if(age>=7&&age<=9) name="Pierwsza kwadra 🌓";
- else if(age>=10&&age<=13) name="Przybywający garb 🌔";
- else if(age>=14&&age<=16) name="Pełnia 🌕";
- else if(age>=17&&age<=20) name="Ubywający garb 🌖";
- else if(age>=21&&age<=23) name="Ostatnia kwadra 🌗";
- else if(age>=24) name="Ubywający sierp 🌘";
- return `${name} (${illum}%)`;
-}
-
-function updateCountdown(now){
- if(!sunEvents.length||currentDay!==0){
-  $("countdown").textContent=currentDay===1?"📅 Podgląd prognozy na jutro":"⏳ Pobierz dane, aby uruchomić odliczanie";
-  $("countdown").style.color="#aaa";
-  return;
- }
- for(let ev of sunEvents){
-  if(now>=ev.start&&now<=ev.end){
-   const left=Math.ceil((ev.end-now)/60000);
-   $("countdown").textContent=`🔥 TRWA TERAZ: ${ev.name} (zostało ${left} min)`;
-   $("countdown").style.color="#70e69a";
-   return;
-  }
-  if(now<ev.start){
-   const diff=Math.floor((ev.start-now)/1000);
-   const h=Math.floor(diff/3600);
-   const m=Math.floor((diff%3600)/60);
-   $("countdown").textContent=`⏳ Za ${h} godz. ${m} min: ${ev.name}`;
-   $("countdown").style.color="#ffd166";
-   return;
-  }
- }
- $("countdown").textContent="🌙 Na dziś wszystkie złote godziny już minęły";
- $("countdown").style.color="#64b5f6";
-}
-
-async function searchCity(){
- const q=$("cityInput").value.trim();
- if(!q)return;
- $("status").textContent="Szukam miasta...";
- try{
-  const res=await fetch(`https://open-meteo.com{encodeURIComponent(q)}&count=1&language=pl&format=json`);
-  const data=await res.json();
-  if(!data.results||!data.results.length)throw Error("Nie znaleziono miasta");
-  const c=data.results[0];
-  $("place").textContent=`📍 ${c.name}, ${c.country||""}`;
-  $("coordinates").textContent=`Współrzędne: ${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}`;
-  await getWeather(c.latitude,c.longitude);
-  $("status").textContent="✅ Pobrano dane dla wybranego miasta.";
- }catch(e){$("status").textContent="❌ "+e.message;}
-}
-
 async function getPlace(lat,lon){
  $("place").textContent="📍 Rozpoznaję miejscowość...";
+
  try{
-  const res=await fetch(`https://bigdatacloud.net{lat}&longitude=${lon}&localityLanguage=pl`);
-  const data=await res.json();
-  const town=data.city||data.locality||data.principalSubdivision||"Twoja lokalizacja";
-  $("place").textContent=`📍 ${town}, ${data.countryName||"Polska"}`;
- }catch(e){$("place").textContent=`📍 ${lat.toFixed(4)}, ${lon.toFixed(4)}`;}
+  const url=
+   `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=pl`;
+
+  const response=await fetch(url);
+  if(!response.ok) throw Error("Geokodowanie niedostępne");
+
+  const data=await response.json();
+
+  const town=data.city ||
+              data.locality ||
+              data.localityInfo?.administrative?.[0]?.name ||
+              data.principalSubdivision ||
+              "Nieznana miejscowość";
+
+  $("place").textContent=
+   `📍 ${town}, ${data.countryName || "Polska"}`;
+
+ }catch(error){
+  $("place").textContent=
+   `📍 ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+ }
 }
 
 async function getWeather(lat,lon){
  $("status").textContent="Pobieram pogodę...";
- const url=`https://open-meteo.com{lat}&longitude=${lon}&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=2`;
- const res=await fetch(url);
- if(!res.ok)throw Error("Błąd serwera pogody");
- savedWeather=await res.json();
+
+ const url=
+ `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
+ `&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m`+
+ `&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max`+
+ `&timezone=auto&forecast_days=2`;
+
+ const response=await fetch(url);
+ if(!response.ok) throw Error("Nie można pobrać pogody");
+
+ savedWeather=await response.json();
  renderWeather();
- $("weatherTime").textContent="Aktualizacja: "+new Date().toLocaleTimeString("pl-PL");
+
+ $("weatherTime").textContent=
+  "Aktualizacja: "+new Date().toLocaleTimeString("pl-PL");
 }
 
 function renderWeather(){
- const d=savedWeather,isToday=currentDay===0;
- const temp=isToday?d.current.temperature_2m:d.daily.temperature_2m_max[1];
- const cloud=isToday?d.current.cloud_cover:"—";
- const wind=isToday?d.current.wind_speed_10m:d.daily.wind_speed_10m_max[1];
- const rain=isToday?d.current.precipitation:d.daily.precipitation_sum[1];
+ const data=savedWeather;
+ const isToday=currentDay===0;
+
+ const temp=isToday ? data.current.temperature_2m : data.daily.temperature_2m_max[1];
+ const cloud=isToday ? data.current.cloud_cover : "—";
+ const wind=isToday ? data.current.wind_speed_10m : data.daily.wind_speed_10m_max[1];
+ const rain=isToday ? data.current.precipitation : data.daily.precipitation_sum[1];
 
  $("temp").textContent=(isToday?"":"maks. ")+Math.round(temp)+"°C";
  $("cloud").textContent=isToday?(cloud+"%"):"prognoza";
  $("wind").textContent=(isToday?"":"maks. ")+Math.round(wind)+" km/h";
  $("rain").textContent=rain+" mm";
 
- $("rise").textContent=showTime(d.daily.sunrise[currentDay]);
- $("set").textContent=showTime(d.daily.sunset[currentDay]);
+ $("rise").textContent=showTime(data.daily.sunrise[currentDay]);
+ $("set").textContent=showTime(data.daily.sunset[currentDay]);
 
- const sr=new Date(d.daily.sunrise[currentDay]),ss=new Date(d.daily.sunset[currentDay]);
- const bm1=new Date(sr.getTime()-35*60000),bm2=new Date(sr.getTime()-10*60000);
- const gm2=new Date(sr.getTime()+50*60000);
- const ge1=new Date(ss.getTime()-50*60000);
- const be1=new Date(ss.getTime()+10*60000),be2=new Date(ss.getTime()+35*60000);
+ const sunrise=new Date(data.daily.sunrise[currentDay]);
+ const sunset=new Date(data.daily.sunset[currentDay]);
 
- const fmt=x=>x.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit",timeZone:d.timezone});
- $("blueMorning").textContent=fmt(bm1)+" – "+fmt(bm2);
- $("morning").textContent=fmt(sr)+" – "+fmt(gm2);
- $("evening").textContent=fmt(ge1)+" – "+fmt(ss);
- $("blueEvening").textContent=fmt(be1)+" – "+fmt(be2);
- $("moon").textContent=getMoonPhase(sr);
+ const blueMorningStart=new Date(sunrise.getTime()-35*60000);
+ const blueMorningEnd=new Date(sunrise.getTime()-10*60000);
+ const morningEnd=new Date(sunrise.getTime()+50*60000);
 
- if(isToday){
-  sunEvents=[
-   {name:"Niebieska godzina rano",start:bm1,end:bm2},
-   {name:"Złota pora rano",start:sr,end:gm2},
-   {name:"Złota pora wieczorem",start:ge1,end:ss},
-   {name:"Niebieska godzina wieczorem",start:be1,end:be2}
-  ];
- }
- calculateScore({precipitation:rain,wind_speed_10m:wind,cloud_cover:isToday?cloud:40,temperature_2m:temp});
+ const eveningStart=new Date(sunset.getTime()-50*60000);
+ const blueEveningStart=new Date(sunset.getTime()+10*60000);
+ const blueEveningEnd=new Date(sunset.getTime()+35*60000);
+
+ const fmt=d=>d.toLocaleTimeString("pl-PL",{
+  hour:"2-digit",minute:"2-digit",timeZone:data.timezone
+ });
+
+ $("blueMorning").textContent=fmt(blueMorningStart)+" – "+fmt(blueMorningEnd);
+ $("morning").textContent=fmt(sunrise)+" – "+fmt(morningEnd);
+ $("evening").textContent=fmt(eveningStart)+" – "+fmt(sunset);
+ $("blueEvening").textContent=fmt(blueEveningStart)+" – "+fmt(blueEveningEnd);
+
+ calculateScore({
+  precipitation:rain,
+  wind_speed_10m:wind,
+  cloud_cover:isToday?cloud:40
+ });
 }
 
 function calculateScore(w){
- let pts=5,reasons=[],tips=[];
- if(w.precipitation===0){pts+=1;reasons.push("brak opadów");}
- else{pts-=2;reasons.push("opady");tips.push("Zabierz osłonę przeciwdeszczową na aparat i obiektyw.");}
+ let points=5;
+ let reasons=[];
 
+ if(w.precipitation===0){
+  points+=1;reasons.push("brak opadów");
+ }else{
+  points-=2;reasons.push("opady");
+ }
+
+ if(w.wind_speed_10m<=8){
+  points+=2;reasons.push("słaby wiatr");
+ }else if(w.wind_speed_10m>20){
+  points-=2;reasons.push("silny wiatr");
+ }
+
+ if(w.cloud_cover>=15&&w.cloud_cover<=65){
+  points+=2;reasons.push("ciekawe zachmurzenie");
+ }else if(w.cloud_cover>85){
+  points-=1;reasons.push("duże zachmurzenie");
+ }
+
+ points=Math.max(1,Math.min(10,points));
+
+ $("score").textContent=points+"/10";
+ $("score").className="big "+
+  (points>=8?"green":points>=5?"yellow":"red");
+
+ $("verdict").textContent=
+  points>=8?"🟢 WARTO BRAĆ APARAT":
+  points>=5?"🟡 MOŻE BYĆ CIEKAWIE":
+  "🔴 SŁABE WARUNKI";
+
+ $("reason").textContent=reasons.join(" • ");
+}
+
+function start(){
+ if(!navigator.geolocation){
+  $("status").textContent="Ta przeglądarka nie obsługuje GPS.";
+  return;
+ }
+
+ $("status").textContent="Pobieram lokalizację GPS...";
+
+ navigator.geolocation.getCurrentPosition(
+  async position=>{
+   const lat=position.coords.latitude;
+   const lon=position.coords.longitude;
+
+   $("coordinates").textContent=
+    `GPS: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+   await getPlace(lat,lon);
+
+   try{
+    await getWeather(lat,lon);
+    $("status").textContent="✅ GPS i pogoda pobrane prawidłowo.";
+   }catch(error){
+    $("status").textContent="❌ Błąd pogody: "+error.message;
+   }
+  },
+  error=>{
+   $("status").textContent=
+    "❌ Błąd GPS: "+error.message+
+    ". Sprawdź uprawnienia lokalizacji.";
+  },
+  {
+   enableHighAccuracy:true,
+   timeout:20000,
+   maximumAge:60000
+  }
+ );
+}
+</script>
+</body>
+</html>
