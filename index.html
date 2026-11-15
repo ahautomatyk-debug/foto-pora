@@ -131,11 +131,7 @@ small{color:#aaa}
 <button id="installBtn" onclick="installApp()" style="display:none;margin-top:12px;background:#ffd166;color:#111">📲 ZAINSTALUJ APLIKACJĘ NA TELEFONIE</button>
 <div id="iosHint" style="display:none;background:#202126;border:1px solid #ffd166;border-radius:14px;padding:14px;margin-top:12px;font-size:14px;line-height:1.5;color:#eee">📲 <b>Zainstaluj FotoPorę jako aplikację:</b><br>Kliknij ikonę <b>Udostępnij</b> (kwadrat ze strzałką ↑) na dole w Safari i wybierz <b>Do ekranu początkowego</b>.</div>
 <button onclick="shareApp()" style="margin-top:12px;background:#303138;color:#fff">📤 Wyślij aplikację znajomym</button>
-<div id="adminStats" style="display:none;background:#18191d;border:1px dashed #ffd166;border-radius:14px;padding:14px;margin-top:14px;font-size:14px;color:#ffd166">
- <b>📊 Statystyki (tylko dla Ciebie):</b><br>
- 👀 Otwarcia aplikacji: <b id="statViews">...</b><br>
- 📲 Kliknięcia instalacji (Android): <b id="statInstalls">...</b>
-</div>
+
 
 </main>
 
@@ -399,26 +395,14 @@ window.addEventListener("load", start);
  $("myManifest").href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(man));
 })();
 
-const apiBase="https://"+"abacus."+"jasoncameron.dev";
-fetch(apiBase+"/hit/fotopora_ah/views").catch(()=>{});
-
-let tapCount=0;
-document.querySelector("h1").addEventListener("click",async()=>{
- tapCount++;
- if(tapCount>=5){
-  tapCount=0;
-  $("adminStats").style.display="block";
-  $("statViews").textContent="sprawdzam...";
-  try{
-   const v=await fetch("https://counterapi.dev").then(r=>r.json());
-   $("statViews").textContent=v.count||"brak danych";
-  }catch(e){$("statViews").textContent="Błąd: "+e.message;}
 
 
- }
-});
 
 
 </script>
+ <script>
+document.write('<script data-goatcounter="https://'+'fotopora.'+'goatcounter.com'+'/count" async src="//'+'gc.zgo.at'+'/count.js"><\/script>');
+</script>
+
 </body>
 </html>
