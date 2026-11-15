@@ -54,6 +54,9 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
  <span><b style="color:#c77dff">┄┄</b> Zachód Księżyca</span>
  <span style="width:100%;text-align:center;color:#999">👆 Dotknij dowolnego miejsca na mapie, aby sprawdzić kierunki światła</span>
 </div>
+<button id="peak3dBtn" onclick="openPeakFinder()" style="width:100%;padding:12px;border-radius:12px;border:1px solid #ffd166;background:#202126;color:#ffd166;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:10px">
+ 🏔️ Podgląd gór 3D w tym miejscu (PeakFinder)
+</button>
 
 <div class="btns">
  <button class="start" onclick="startTrack()">▶ START TRASY</button>
@@ -247,6 +250,22 @@ function toggleMapNight(){
  document.body.classList.toggle("night");
  const on = document.body.classList.contains("night");
  document.getElementById("mapNightBtn").textContent = on ? "☀️ Dzień" : "🔦 Noc";
+}
+</script>
+<script>
+let lastAzimuths = { sRise: 110, sSet: 250 };
+const origDraw = drawAstroLines;
+drawAstroLines = function(lat, lon) {
+ origDraw(lat, lon);
+ lastAzimuths = getAstroAzimuths(lat, lon);
+};
+
+function openPeakFinder() {
+ const c = customAstroLatLng || (points.length ? L.latLng(points[points.length - 1]) : map.getCenter());
+ const dir = Math.round(lastAzimuths.sRise || 110);
+ const base = "https://www.peakfinder" + ".org/";
+ const params = `?lat=${c.lat.toFixed(4)}&lng=${c.lng.toFixed(4)}&azi=${dir}&alt=2&fov=60`;
+ window.open(base + params, "_blank");
 }
 </script>
 
