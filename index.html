@@ -59,7 +59,11 @@ small{color:#aaa}
 <body>
 <main>
 
-<h1>📸 FotoPora</h1>
+<div style="display:flex;justify-content:space-between;align-items:center">
+ <h1 style="margin-bottom:5px">📸 FotoPora</h1>
+ <button id="nightBtn" onclick="toggleNight()" title="Tryb nocny (czerwony)" style="padding:8px 12px;border-radius:12px;border:1px solid #393a40;background:#202126;color:#ff6666;font-size:14px;cursor:pointer">🔦 Noc</button>
+</div>
+
 <div class="sub">Twój osobisty asystent fotograficzny</div>
  <a href="trasa.html" style="display:block;text-align:center;background:#303138;color:#ffd166;text-decoration:none;padding:12px;border-radius:14px;font-weight:bold;margin-bottom:14px">🥾 Otwórz śledzenie trasy GPS (Powrót po śladzie) →</a>
 
@@ -402,6 +406,30 @@ window.addEventListener("load", start);
 </script>
  <script>
 document.write('<script data-goatcounter="https://'+'fotopora.'+'goatcounter.com'+'/count" async src="//'+'gc.zgo.at'+'/count.js"><\/script>');
+</script>
+<style>
+body.night, body.night .card, body.night .tile, body.night input, body.night .tab {
+ background:#000 !important;
+ color:#ff3333 !important;
+ border-color:#550000 !important;
+}
+body.night *, body.night small {
+ color:#ff3333 !important;
+ border-color:#550000 !important;
+}
+body.night button, body.night a, body.night .tab.active {
+ background:#1a0000 !important;
+ color:#ff4444 !important;
+ border:1px solid #880000 !important;
+}
+</style>
+
+<script>
+function toggleNight(){
+ document.body.classList.toggle("night");
+ const on = document.body.classList.contains("night");
+ document.getElementById("nightBtn").textContent = on ? "☀️ Dzień" : "🔦 Noc";
+}
 </script>
 
 </body>
