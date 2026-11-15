@@ -122,5 +122,38 @@ function clearTrack(){
 updateMap(true);
 
 </script>
+ <button id="mapNightBtn" onclick="toggleMapNight()" style="position:fixed;top:14px;right:14px;z-index:9999;padding:10px 14px;border-radius:12px;border:1px solid #393a40;background:#202126;color:#ff6666;font-weight:bold;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.5)">
+ 🔦 Noc
+</button>
+
+<style>
+body.night, body.night div, body.night .card, body.night .panel, body.night .box {
+ background:#000 !important;
+ color:#ff3333 !important;
+ border-color:#550000 !important;
+}
+body.night button, body.night a {
+ background:#1a0000 !important;
+ color:#ff4444 !important;
+ border:1px solid #880000 !important;
+}
+body.night .leaflet-tile-pane {
+ filter: invert(100%) hue-rotate(180deg) brightness(65%) contrast(130%) sepia(100%) saturate(500%) hue-rotate(-50deg) !important;
+}
+body.night .leaflet-control-attribution, body.night .leaflet-control-zoom a {
+ background:#1a0000 !important;
+ color:#ff4444 !important;
+ border-color:#660000 !important;
+}
+</style>
+
+<script>
+function toggleMapNight(){
+ document.body.classList.toggle("night");
+ const on = document.body.classList.contains("night");
+ document.getElementById("mapNightBtn").textContent = on ? "☀️ Dzień" : "🔦 Noc";
+}
+</script>
+
 </body>
 </html>
