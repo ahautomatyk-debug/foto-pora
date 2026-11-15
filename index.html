@@ -408,12 +408,13 @@ document.querySelector("h1").addEventListener("click",async()=>{
  if(tapCount>=5){
   tapCount=0;
   $("adminStats").style.display="block";
-  try{
-   const v=await fetch(apiBase+"/get/fotopora_ah/views").then(r=>r.json());
-   const i=await fetch(apiBase+"/get/fotopora_ah/installs").then(r=>r.json());
+    try{
+   const v=await fetch(apiBase+"/get/fotopora_ah/views").then(r=>r.ok?r.json():{value:0});
+   const i=await fetch(apiBase+"/get/fotopora_ah/installs").then(r=>r.ok?r.json():{value:0});
    $("statViews").textContent=v.value||0;
    $("statInstalls").textContent=i.value||0;
-  }catch(e){$("statViews").textContent="błąd połączenia";}
+  }catch(e){$("statViews").textContent="brak sieci";}
+
  }
 });
 
