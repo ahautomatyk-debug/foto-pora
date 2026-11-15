@@ -399,8 +399,8 @@ window.addEventListener("load", start);
  $("myManifest").href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(man));
 })();
 
-const apiBase="https://"+"api.counterapi.dev"+"/v1/fotopora_ah";
-fetch(apiBase+"/views/up").catch(()=>{});
+const apiBase="https://"+"abacus."+"jasoncameron.dev";
+fetch(apiBase+"/hit/fotopora_ah/views").catch(()=>{});
 
 let tapCount=0;
 document.querySelector("h1").addEventListener("click",async()=>{
@@ -409,13 +409,14 @@ document.querySelector("h1").addEventListener("click",async()=>{
   tapCount=0;
   $("adminStats").style.display="block";
   try{
-   const v=await fetch(apiBase+"/views").then(r=>r.json());
-   const i=await fetch(apiBase+"/installs").then(r=>r.json());
-   $("statViews").textContent=v.count||0;
-   $("statInstalls").textContent=i.count||0;
+   const v=await fetch(apiBase+"/get/fotopora_ah/views").then(r=>r.json());
+   const i=await fetch(apiBase+"/get/fotopora_ah/installs").then(r=>r.json());
+   $("statViews").textContent=v.value||0;
+   $("statInstalls").textContent=i.value||0;
   }catch(e){$("statViews").textContent="błąd połączenia";}
  }
 });
+
 
 </script>
 </body>
