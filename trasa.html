@@ -47,6 +47,13 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
   <div class="tile">🎯 Do startu<b id="toStart">—</b></div>
  </div>
 </div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;background:#202126;padding:10px;border-radius:12px;margin:10px 0;font-size:12px;color:#ddd">
+ <span><b style="color:#ffd166">━━</b> Wschód Słońca</span>
+ <span><b style="color:#ff7b00">━━</b> Zachód Słońca</span>
+ <span><b style="color:#4cc9f0">━━</b> Wschód Księżyca</span>
+ <span><b style="color:#c77dff">┄┄</b> Zachód Księżyca</span>
+ <span style="width:100%;text-align:center;color:#999">👆 Dotknij dowolnego miejsca na mapie, aby sprawdzić kierunki światła</span>
+</div>
 
 <div class="btns">
  <button class="start" onclick="startTrack()">▶ START TRASY</button>
@@ -124,6 +131,92 @@ function clearTrack(){
  if(confirm("Usunąć zapisaną trasę z mapy?")){stopTrack();points=[];localStorage.removeItem("fp_track");updateMap(false);$("status").textContent="Mapa wyczyszczona.";}
 }
 updateMap(true);
+// === LINIE KIERUNKU SŁOŃCA I KSIĘŻYCA NA MAPIE ===
+const astroLinesLayer = L.layerGroup().addTo(map);
+let customAstroLatLng = null;
+
+function getAstroAzimuths(lat, lon) {
+ const rad = Math.PI / 180;
+ const phi = lat * rad;
+ function sunAltAz(t) {
+  const d = (t - Date.UTC(2000, 0, 1, 12)) / 86400000;
+  const g = (357.529 + 0.98560028 * d) * rad;
+  const q = (280.459 + 0.98564736 * d) * rad;
+  const L = q + (1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * rad;
+  const e = (23.439 - 0.00000036 * d) * rad;
+  const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L));
+  const dec = Math.asin(Math.sin(e) * Math.sin(L));
+  const H = ((280.16 + 360.9856235 * d) * rad + lon * rad) - ra;
+  const alt = Math.asin(Math.sin(phi)*Math.sin(dec) + Math.cos(phi)*Math.cos(dec)*Math.cos(H)) / rad;
+  const az = (Math.atan2(Math.sin(H), Math.cos(H)*Math.sin(phi) - Math.tan(dec)*Math.cos(phi)) / rad + 180) % 360;
+  return { alt, az };
+ }
+ function moonAltAz(t) {
+  const d = (t - Date.UTC(2000, 0, 1, 12)) / 86400000;
+  const L = (218.316 + 13.176396 * d) * rad;
+  const M = (134.963 + 13.064993 * d) * rad;
+  const F = (93.272 + 13.229350 * d) * rad;
+  const l = L + 6.289 * rad * Math.sin(M);
+  const b = 5.128 * rad * Math.sin(F);
+  const e = 23.4397 * rad;
+  const ra = Math.atan2(Math.sin(l)*Math.cos(e) - Math.tan(b)*Math.sin(e), Math.cos(l));
+  const dec = Math.asin(Math.sin(b)*Math.cos(e) + Math.cos(b)*Math.sin(e)*Math.sin(l));
+  const H = ((280.16 + 360.9856235 * d) * rad + lon * rad) - ra;
+  const alt = Math.asin(Math.sin(phi)*Math.sin(dec) + Math.cos(phi)*Math.cos(dec)*Math.cos(H)) / rad;
+  const az = (Math.atan2(Math.sin(H), Math.cos(H)*Math.sin(phi) - Math.tan(dec)*Math.cos(phi)) / rad + 180) % 360;
+  return { alt, az };
+ }
+ const base = new Date();
+ base.setHours(0, 0, 0, 0);
+ let sRise = null, sSet = null, mRise = null, mSet = null;
+ let pS = sunAltAz(base.getTime()), pM = moonAltAz(base.getTime());
+ for (let m = 5; m <= 1440; m += 5) {
+  const t = base.getTime() + m * 60000;
+  const cS = sunAltAz(t), cM = moonAltAz(t);
+  if (pS.alt < -0.83 && cS.alt >= -0.83 && sRise === null) sRise = cS.az;
+  if (pS.alt >= -0.83 && cS.alt < -0.83 && sSet === null) sSet = cS.az;
+  if (pM.alt < -0.5 && cM.alt >= -0.5 && mRise === null) mRise = cM.az;
+  if (pM.alt >= -0.5 && cM.alt < -0.5 && mSet === null) mSet = cM.az;
+  pS = cS; pM = cM;
+ }
+ return { sRise, sSet, mRise, mSet };
+}
+
+function destPoint(lat, lon, azDeg, distKm) {
+ const R = 6371;
+ const rad = Math.PI / 180;
+ const brng = azDeg * rad;
+ const lat1 = lat * rad, lon1 = lon * rad;
+ const lat2 = Math.asin(Math.sin(lat1)*Math.cos(distKm/R) + Math.cos(lat1)*Math.sin(distKm/R)*Math.cos(brng));
+ const lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(distKm/R)*Math.cos(lat1), Math.cos(distKm/R) - Math.sin(lat1)*Math.sin(lat2));
+ return [lat2 / rad, lon2 / rad];
+}
+
+function drawAstroLines(lat, lon) {
+ astroLinesLayer.clearLayers();
+ const az = getAstroAzimuths(lat, lon);
+ L.circleMarker([lat, lon], { radius: 6, color: "#fff", fillColor: "#ffd166", fillOpacity: 1 }).addTo(astroLinesLayer);
+ const addRay = (deg, color, dash, label) => {
+  if (deg === null) return;
+  const end = destPoint(lat, lon, deg, 12);
+  L.polyline([[lat, lon], end], { color, weight: 3, opacity: 0.9, dashArray: dash || null })
+   .bindTooltip(`${label} (${Math.round(deg)}°)`).addTo(astroLinesLayer);
+ };
+ addRay(az.sRise, "#ffd166", null, "🌅 Wschód Słońca");
+ addRay(az.sSet,  "#ff7b00", null, "🌇 Zachód Słońca");
+ addRay(az.mRise, "#4cc9f0", null, "🌔 Wschód Księżyca");
+ addRay(az.mSet,  "#c77dff", "6,6", "🌘 Zachód Księżyca");
+}
+
+map.on("click", e => {
+ customAstroLatLng = e.latlng;
+ drawAstroLines(e.latlng.lat, e.latlng.lng);
+});
+
+setTimeout(() => {
+ const c = points.length ? L.latLng(points[points.length - 1]) : map.getCenter();
+ drawAstroLines(c.lat, c.lng);
+}, 400);
 
 </script>
 
