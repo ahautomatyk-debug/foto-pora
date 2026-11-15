@@ -53,15 +53,13 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
  <span><b style="color:#4cc9f0">━━</b> Wschód Księżyca</span>
  <span><b style="color:#c77dff">┄┄</b> Zachód Księżyca</span>
  <span style="width:100%;text-align:center;color:#999">👆 Dotknij dowolnego miejsca na mapie, aby sprawdzić kierunki światła</span>
+<div id="astroDegBox" style="text-align:center;font-size:13px;color:#ffd166;margin-bottom:8px;font-weight:bold">
+ Kierunki: Słońce —° | Księżyc —°
 </div>
-<div style="display:flex;gap:8px;margin-bottom:10px">
- <button id="peakSunBtn" onclick="openPeakFinder('sun')" style="flex:1;padding:12px 8px;border-radius:12px;border:1px solid #ffd166;background:#202126;color:#ffd166;font-weight:bold;font-size:13px;cursor:pointer">
-  🌅 Góry 3D: Słońce
- </button>
- <button id="peakMoonBtn" onclick="openPeakFinder('moon')" style="flex:1;padding:12px 8px;border-radius:12px;border:1px solid #4cc9f0;background:#202126;color:#4cc9f0;font-weight:bold;font-size:13px;cursor:pointer">
-  🌔 Góry 3D: Księżyc
- </button>
-</div>
+<button id="peak3dBtn" onclick="openPeakFinder()" style="width:100%;padding:12px;border-radius:12px;border:1px solid #ffd166;background:#202126;color:#ffd166;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:10px">
+ 🏔️ Podgląd gór 3D w tym miejscu (PeakFinder)
+</button>
+
 
 
 <div class="btns">
@@ -259,20 +257,31 @@ function toggleMapNight(){
 }
 </script>
 <script>
-function openPeakFinder(mode) {
+const origDrawAstro = drawAstroLines;
+drawAstroLines = function(lat, lon) {
+ origDrawAstro(lat, lon);
+ const az = getAstroAzimuths(lat, lon);
+ const sR = az.sRise !== null ? Math.round(az.sRise) + "°" : "—";
+ const sS = az.sSet  !== null ? Math.round(az.sSet)  + "°" : "—";
+ const mR = az.mRise !== null ? Math.round(az.mRise) + "°" : "—";
+ const mS = az.mSet  !== null ? Math.round(az.mSet)  + "°" : "—";
+ const box = document.getElementById("astroDegBox");
+ if (box) box.textContent = `🌅 Słońce: ↑${sR} ↓${sS}   |   🌔 Księżyc: ↑${mR} ↓${mS}`;
+};
+
+function openPeakFinder() {
  const c = customAstroLatLng || (points.length ? L.latLng(points[points.length - 1]) : map.getCenter());
- const az = getAstroAzimuths(c.lat, c.lng);
- let dir = 115;
- if (mode === "moon") {
-  dir = (az.mRise !== null) ? az.mRise : ((az.mSet !== null) ? az.mSet : 90);
- } else {
-  dir = (az.sRise !== null) ? az.sRise : ((az.sSet !== null) ? az.sSet : 115);
- }
  const base = "https://www.peakfinder" + ".org/";
- const params = `?lat=${c.lat.toFixed(5)}&lng=${c.lng.toFixed(5)}&azi=${Math.round(dir)}&alt=2&fov=60&date=${new Date().toISOString().slice(0,10)}`;
+ const params = `?lat=${c.lat.toFixed(5)}&lng=${c.lng.toFixed(5)}`;
  window.open(base + params, "_blank");
 }
+
+setTimeout(() => {
+ const c = customAstroLatLng || (points.length ? L.latLng(points[points.length - 1]) : map.getCenter());
+ drawAstroLines(c.lat, c.lng);
+}, 500);
 </script>
+
 
 
 
