@@ -30,10 +30,14 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
 </head>
 <body>
 <main>
-<div class="top">
- <h2 style="margin:0">🗺️ Mapa Trasy</h2>
- <a href="index.html" class="back">← FotoPora</a>
+<div class="top" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+ <h2 style="margin:0;font-size:20px">🗺️ Mapa Trasy</h2>
+ <div style="display:flex;gap:8px;align-items:center">
+  <button id="mapNightBtn" onclick="toggleMapNight()" style="padding:8px 12px;border-radius:12px;border:1px solid #393a40;background:#202126;color:#ff6666;font-weight:bold;font-size:13px;cursor:pointer;width:auto">🔦 Noc</button>
+  <a href="index.html" class="back" style="margin:0">← FotoPora</a>
+ </div>
 </div>
+
 
 <div class="card">
  <div id="map"></div>
@@ -122,9 +126,7 @@ function clearTrack(){
 updateMap(true);
 
 </script>
- <button id="mapNightBtn" onclick="toggleMapNight()" style="position:fixed;top:72px;right:14px;z-index:9999;padding:10px 14px;border-radius:12px;border:1px solid #393a40;background:#202126;color:#ff6666;font-weight:bold;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.5)">
- 🔦 Noc
-</button>
+
 
 <style>
 body.night, body.night div, body.night .card, body.night .panel, body.night .box {
