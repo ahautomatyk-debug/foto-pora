@@ -105,6 +105,8 @@ small{color:#aaa}
  <div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blueEvening">—</b></div>
   <div class="row"><span>🌫️ Szansa na mgłę</span><b id="fog">—</b></div>
    <div class="row"><span>🎨 Kolory na niebie</span><b id="skyColor">—</b></div>
+   <div class="row"><span>🌙 Księżyc</span><b id="moonInfo">—</b></div>
+
 
   <div class="row"><span>🧭 Kierunek słońca</span><b id="sunDir">—</b></div>
   <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid #393a40">
@@ -258,6 +260,23 @@ function renderWeather(){
  } else {
   $("skyColor").textContent = "—";
  }
+ // Faza Księżyca i podpowiedź fotograficzna (Dziś / Jutro)
+ const moonDate = new Date();
+ moonDate.setDate(moonDate.getDate() + currentDay);
+ const synodic = 29.53058867;
+ const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
+ const phase = (((moonDate.getTime() - knownNewMoon) / 86400000) % synodic + synodic) % synodic / synodic;
+ const illum = Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2 * 100);
+ let mIcon = "🌑", mTip = "Nów (idealny na gwiazdy)";
+ if (phase < 0.03 || phase > 0.97) { mIcon = "🌑"; mTip = "Nów (idealny na gwiazdy)"; }
+ else if (phase < 0.22) { mIcon = "🌒"; mTip = "Rośnie (wąski sierp)"; }
+ else if (phase < 0.28) { mIcon = "🌓"; mTip = "I kwadra (super cienie kraterów!)"; }
+ else if (phase < 0.47) { mIcon = "🌔"; mTip = "Rośnie (świetne kratery)"; }
+ else if (phase < 0.53) { mIcon = "🌕"; mTip = "Pełnia (jasny krajobraz)"; }
+ else if (phase < 0.72) { mIcon = "🌖"; mTip = "Maleje (świetne kratery)"; }
+ else if (phase < 0.78) { mIcon = "🌗"; mTip = "III kwadra (super cienie kraterów!)"; }
+ else { mIcon = "🌘"; mTip = "Maleje (wąski sierp)"; }
+ $("moonInfo").textContent = `${mIcon} ${illum}% — ${mTip}`;
 
  $("rise").textContent=showTime(data.daily.sunrise[currentDay]);
  $("set").textContent=showTime(data.daily.sunset[currentDay]);
