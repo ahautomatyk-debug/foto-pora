@@ -54,9 +54,15 @@ button{flex:1;padding:16px;border:0;border-radius:14px;font-size:16px;font-weigh
  <span><b style="color:#c77dff">┄┄</b> Zachód Księżyca</span>
  <span style="width:100%;text-align:center;color:#999">👆 Dotknij dowolnego miejsca na mapie, aby sprawdzić kierunki światła</span>
 </div>
-<button id="peak3dBtn" onclick="openPeakFinder()" style="width:100%;padding:12px;border-radius:12px;border:1px solid #ffd166;background:#202126;color:#ffd166;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:10px">
- 🏔️ Podgląd gór 3D w tym miejscu (PeakFinder)
-</button>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+ <button id="peakSunBtn" onclick="openPeakFinder('sun')" style="flex:1;padding:12px 8px;border-radius:12px;border:1px solid #ffd166;background:#202126;color:#ffd166;font-weight:bold;font-size:13px;cursor:pointer">
+  🌅 Góry 3D: Słońce
+ </button>
+ <button id="peakMoonBtn" onclick="openPeakFinder('moon')" style="flex:1;padding:12px 8px;border-radius:12px;border:1px solid #4cc9f0;background:#202126;color:#4cc9f0;font-weight:bold;font-size:13px;cursor:pointer">
+  🌔 Góry 3D: Księżyc
+ </button>
+</div>
+
 
 <div class="btns">
  <button class="start" onclick="startTrack()">▶ START TRASY</button>
