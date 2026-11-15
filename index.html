@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FotoPora</title>
  <link rel="manifest" id="myManifest">
+<link rel="apple-touch-icon" href="icon.png.jpg">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -393,16 +394,11 @@ function shareApp(){
 }
 window.addEventListener("load", start);
 (function(){
- const c=document.createElement("canvas");c.width=512;c.height=512;
- const ctx=c.getContext("2d");
- ctx.fillStyle="#101114";ctx.fillRect(0,0,512,512);
- ctx.strokeStyle="#ffd166";ctx.lineWidth=20;ctx.strokeRect(20,20,472,472);
- ctx.font="240px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
- ctx.fillText("📸",256,270);
- const iconUrl=c.toDataURL("image/png");
+ const iconUrl=new URL("icon.png.jpg",window.location.href).href;
  const man={name:"FotoPora",short_name:"FotoPora",start_url:window.location.href,display:"standalone",background_color:"#101114",theme_color:"#101114",icons:[{src:iconUrl,sizes:"512x512",type:"image/png"}]};
  $("myManifest").href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(man));
 })();
+
 const apiBase="https://"+"api.counterapi.dev"+"/v1/fotopora_ah";
 fetch(apiBase+"/views/up").catch(()=>{});
 
