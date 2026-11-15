@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -106,6 +107,7 @@ small{color:#aaa}
   <div class="row"><span>🌫️ Szansa na mgłę</span><b id="fog">—</b></div>
    <div class="row"><span>🎨 Kolory na niebie</span><b id="skyColor">—</b></div>
    <div class="row"><span>🌙 Księżyc</span><b id="moonInfo">—</b></div>
+  <div class="row"><span>🌔 Wschód / zachód Księżyca</span><b id="moonTimes">—</b></div>
 
 
   <div class="row"><span>🧭 Kierunek słońca</span><b id="sunDir">—</b></div>
@@ -277,6 +279,38 @@ function renderWeather(){
  else if (phase < 0.78) { mIcon = "🌗"; mTip = "III kwadra (super cienie kraterów!)"; }
  else { mIcon = "🌘"; mTip = "Maleje (wąski sierp)"; }
  $("moonInfo").textContent = `${mIcon} ${illum}% — ${mTip}`;
+ // Wschód i zachód Księżyca offline (Dziś / Jutro)
+ (function(){
+  if (!data.latitude || !data.longitude) return;
+  const rad = Math.PI / 180;
+  function moonAlt(t) {
+   const d = (t - Date.UTC(2000, 0, 1, 12)) / 86400000;
+   const L = (218.316 + 13.176396 * d) * rad;
+   const M = (134.963 + 13.064993 * d) * rad;
+   const F = (93.272 + 13.229350 * d) * rad;
+   const l = L + 6.289 * rad * Math.sin(M);
+   const b = 5.128 * rad * Math.sin(F);
+   const e = 23.4397 * rad;
+   const ra = Math.atan2(Math.sin(l)*Math.cos(e) - Math.tan(b)*Math.sin(e), Math.cos(l));
+   const dec = Math.asin(Math.sin(b)*Math.cos(e) + Math.cos(b)*Math.sin(e)*Math.sin(l));
+   const H = ((280.16 + 360.9856235 * d) * rad + data.longitude * rad) - ra;
+   const phi = data.latitude * rad;
+   return Math.asin(Math.sin(phi)*Math.sin(dec) + Math.cos(phi)*Math.cos(dec)*Math.cos(H)) / rad;
+  }
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  base.setDate(base.getDate() + currentDay);
+  let rise = "—", set = "—", prev = moonAlt(base.getTime());
+  for (let m = 5; m <= 1440; m += 5) {
+   const t = base.getTime() + m * 60000;
+   const cur = moonAlt(t);
+   const hhmm = new Date(t).toLocaleTimeString("pl-PL", {hour:"2-digit", minute:"2-digit"});
+   if (prev < -0.5 && cur >= -0.5 && rise === "—") rise = hhmm;
+   if (prev >= -0.5 && cur < -0.5 && set === "—") set = hhmm;
+   prev = cur;
+  }
+  $("moonTimes").textContent = `↑ ${rise}  |  ↓ ${set}`;
+ })();
 
  $("rise").textContent=showTime(data.daily.sunrise[currentDay]);
  $("set").textContent=showTime(data.daily.sunset[currentDay]);
