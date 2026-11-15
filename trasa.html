@@ -259,23 +259,21 @@ function toggleMapNight(){
 }
 </script>
 <script>
-let lastAzimuths = { sRise: 110, sSet: 250, mRise: 90, mSet: 270 };
-const origDraw = drawAstroLines;
-drawAstroLines = function(lat, lon) {
- origDraw(lat, lon);
- lastAzimuths = getAstroAzimuths(lat, lon);
-};
-
 function openPeakFinder(mode) {
  const c = customAstroLatLng || (points.length ? L.latLng(points[points.length - 1]) : map.getCenter());
- const dir = mode === "moon"
-  ? Math.round(lastAzimuths.mRise ?? lastAzimuths.mSet ?? 90)
-  : Math.round(lastAzimuths.sRise ?? lastAzimuths.sSet ?? 110);
+ const az = getAstroAzimuths(c.lat, c.lng);
+ let dir = 115;
+ if (mode === "moon") {
+  dir = (az.mRise !== null) ? az.mRise : ((az.mSet !== null) ? az.mSet : 90);
+ } else {
+  dir = (az.sRise !== null) ? az.sRise : ((az.sSet !== null) ? az.sSet : 115);
+ }
  const base = "https://www.peakfinder" + ".org/";
- const params = `?lat=${c.lat.toFixed(4)}&lng=${c.lng.toFixed(4)}&azi=${dir}&alt=2&fov=60`;
+ const params = `?lat=${c.lat.toFixed(5)}&lng=${c.lng.toFixed(5)}&azi=${Math.round(dir)}&alt=2&fov=60&date=${new Date().toISOString().slice(0,10)}`;
  window.open(base + params, "_blank");
 }
 </script>
+
 
 
 </body>
