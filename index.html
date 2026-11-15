@@ -130,6 +130,11 @@ small{color:#aaa}
 <button id="installBtn" onclick="installApp()" style="display:none;margin-top:12px;background:#ffd166;color:#111">📲 ZAINSTALUJ APLIKACJĘ NA TELEFONIE</button>
 <div id="iosHint" style="display:none;background:#202126;border:1px solid #ffd166;border-radius:14px;padding:14px;margin-top:12px;font-size:14px;line-height:1.5;color:#eee">📲 <b>Zainstaluj FotoPorę jako aplikację:</b><br>Kliknij ikonę <b>Udostępnij</b> (kwadrat ze strzałką ↑) na dole w Safari i wybierz <b>Do ekranu początkowego</b>.</div>
 <button onclick="shareApp()" style="margin-top:12px;background:#303138;color:#fff">📤 Wyślij aplikację znajomym</button>
+<div id="adminStats" style="display:none;background:#18191d;border:1px dashed #ffd166;border-radius:14px;padding:14px;margin-top:14px;font-size:14px;color:#ffd166">
+ <b>📊 Statystyki (tylko dla Ciebie):</b><br>
+ 👀 Otwarcia aplikacji: <b id="statViews">...</b><br>
+ 📲 Kliknięcia instalacji (Android): <b id="statInstalls">...</b>
+</div>
 
 </main>
 
@@ -398,6 +403,23 @@ window.addEventListener("load", start);
  const man={name:"FotoPora",short_name:"FotoPora",start_url:window.location.href,display:"standalone",background_color:"#101114",theme_color:"#101114",icons:[{src:iconUrl,sizes:"512x512",type:"image/png"}]};
  $("myManifest").href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(man));
 })();
+const apiBase="https://"+"api.counterapi.dev"+"/v1/fotopora_ah";
+fetch(apiBase+"/views/up").catch(()=>{});
+
+let tapCount=0;
+document.querySelector("h1").addEventListener("click",async()=>{
+ tapCount++;
+ if(tapCount>=5){
+  tapCount=0;
+  $("adminStats").style.display="block";
+  try{
+   const v=await fetch(apiBase+"/views").then(r=>r.json());
+   const i=await fetch(apiBase+"/installs").then(r=>r.json());
+   $("statViews").textContent=v.count||0;
+   $("statInstalls").textContent=i.count||0;
+  }catch(e){$("statViews").textContent="błąd połączenia";}
+ }
+});
 
 </script>
 </body>
