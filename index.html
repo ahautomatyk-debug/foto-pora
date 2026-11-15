@@ -104,6 +104,8 @@ small{color:#aaa}
  <div class="row"><span>🟠 Złota pora wieczorem</span><b class="yellow" id="evening">—</b></div>
  <div class="row"><span>🔵 Niebieska godzina wieczorem</span><b class="blue" id="blueEvening">—</b></div>
   <div class="row"><span>🌫️ Szansa na mgłę</span><b id="fog">—</b></div>
+   <div class="row"><span>🎨 Kolory na niebie</span><b id="skyColor">—</b></div>
+
   <div class="row"><span>🧭 Kierunek słońca</span><b id="sunDir">—</b></div>
   <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid #393a40">
   <div style="position:relative;width:150px;height:150px;margin:auto;border:2px solid #555;border-radius:50%;background:#18191d">
@@ -195,6 +197,8 @@ async function getWeather(lat,lon){
  `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
  `&current=temperature_2m,precipitation,cloud_cover,wind_speed_10m,pressure_msl`+
  `&daily=sunrise,sunset,temperature_2m_max,precipitation_sum,wind_speed_10m_max,weather_code`+
+   `&hourly=cloud_cover_low,cloud_cover_mid,cloud_cover_high`+
+
  `&timezone=auto&forecast_days=2`;
 
  const response=await fetch(url);
@@ -228,6 +232,32 @@ function renderWeather(){
  const isMist=(!isFog && rain===0 && wind<=7);
  $("fog").textContent=isFog?"🌫️ TAK (prognozowana mgła)":isMist?"🌤️ Możliwe lokalne mgły (słaby wiatr)":"❌ Brak";
  $("fog").style.color=isFog?"#70e69a":isMist?"#ffd166":"#aaa";
+ // Analiza kolorowych chmur (Alpenglow) o wschodzie i zachodzie
+ const sunIso = isToday ? data.daily.sunset[0] : data.daily.sunrise[1];
+ const hourKey = sunIso ? sunIso.slice(0,13) + ":00" : "";
+ const hIdx = data.hourly && data.hourly.time ? data.hourly.time.indexOf(hourKey) : -1;
+ if (hIdx !== -1) {
+  const low = data.hourly.cloud_cover_low[hIdx];
+  const mid = data.hourly.cloud_cover_mid[hIdx];
+  const high = data.hourly.cloud_cover_high[hIdx];
+  const topClouds = Math.max(mid, high);
+  const el = $("skyColor");
+  if (low <= 35 && topClouds >= 25 && topClouds <= 85) {
+   el.textContent = "🔥 Duża (ogniste chmury)";
+   el.className = "yellow";
+  } else if (low <= 50 && topClouds >= 15) {
+   el.textContent = "🟠 Średnia (możliwe kolory)";
+   el.className = "green";
+  } else if (topClouds < 15 && low < 20) {
+   el.textContent = "☀️ Czyste niebo (bez chmur)";
+   el.className = "blue";
+  } else {
+   el.textContent = "☁️ Niska (szara pokrywa)";
+   el.className = "";
+  }
+ } else {
+  $("skyColor").textContent = "—";
+ }
 
  $("rise").textContent=showTime(data.daily.sunrise[currentDay]);
  $("set").textContent=showTime(data.daily.sunset[currentDay]);
