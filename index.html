@@ -55,6 +55,36 @@ small{color:#aaa}
 .tile{background:#303138;border-radius:12px;padding:13px}
 .tile b{display:block;font-size:21px;margin-top:7px}
 #status{font-size:14px;color:#bbb;line-height:1.5}
+ .galeria-link-box {
+    text-align: center;
+    margin: 24px 0 32px;
+  }
+
+  .galeria-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: #16161c;
+    color: #ffd166;
+    border: 1px solid rgba(255, 209, 102, 0.4);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .galeria-btn:hover {
+    background: #1f1f28;
+    transform: translateY(-1px);
+  }
+
+  body.night .galeria-btn {
+    background: #1a0000;
+    color: #ff4444;
+    border-color: #600000;
+  }
 </style>
 </head>
 <body>
@@ -514,6 +544,10 @@ function toggleNight(){
  document.getElementById("nightBtn").textContent = on ? "☀️ Dzień" : "🔦 Noc";
 }
 </script>
-
+<div class="galeria-link-box">
+    <a href="https://fotopora-beskidy.github.io/Galeria/" target="_blank" rel="noopener" class="galeria-btn">
+      📸 Zobacz galerię i zostaw komentarz
+    </a>
+  </div>
 </body>
 </html>
